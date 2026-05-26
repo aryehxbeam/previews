@@ -495,19 +495,11 @@ console.log(shouldIEatThis(rhubarb, "stalk")); // 🥧 proceed to pie</code></pr
   <p class="lead">Strawberry-rhubarb truthers welcome. Comments persist via GitHub Discussions.</p>
   <div class="card">
     <script src="https://giscus.app/client.js"
-      data-repo="aryehxbeam/previews"
-      data-repo-id="R_kgDOSorQvw"
-      data-category="Announcements"
-      data-category-id="DIC_kwDOSorQv84C95z3"
-      data-mapping="pathname"
-      data-strict="0"
-      data-reactions-enabled="1"
-      data-emit-metadata="0"
-      data-input-position="bottom"
-      data-theme="transparent_dark"
-      data-lang="en"
-      crossorigin="anonymous"
-      async>
+      data-repo="aryehxbeam/previews" data-repo-id="R_kgDOSorQvw"
+      data-category="Announcements" data-category-id="DIC_kwDOSorQv84C95z3"
+      data-mapping="pathname" data-strict="0" data-reactions-enabled="1"
+      data-emit-metadata="0" data-input-position="bottom" data-theme="transparent_dark"
+      data-lang="en" crossorigin="anonymous" async>
     </script>
   </div>
 </section>
@@ -517,6 +509,89 @@ console.log(shouldIEatThis(rhubarb, "stalk")); // 🥧 proceed to pie</code></pr
 </footer>
 
 </div>
+<style>
+  #xb-launch{position:fixed;top:18px;right:18px;z-index:9998;font-family:var(--sans);font-weight:800;font-size:13px;
+    background:linear-gradient(var(--stalk-deep),var(--stalk));color:#fff;border:none;border-radius:999px;
+    padding:10px 16px;cursor:pointer;box-shadow:0 6px 24px rgba(255,45,120,.45);display:flex;gap:8px;align-items:center}
+  #xb-badge{background:#1a0a14;color:var(--gold);border-radius:999px;padding:1px 8px;font-size:12px;min-width:20px;text-align:center}
+  #xb-backdrop{position:fixed;inset:0;background:rgba(10,4,8,.6);backdrop-filter:blur(2px);z-index:9998;opacity:0;pointer-events:none;transition:opacity .25s}
+  #xb-backdrop.show{opacity:1;pointer-events:auto}
+  #xb-drawer{position:fixed;top:0;right:0;height:100vh;width:min(400px,92vw);z-index:9999;
+    background:linear-gradient(180deg,#23102099,#160a13ee);backdrop-filter:blur(14px);
+    border-left:1px solid var(--glass-brd);box-shadow:-12px 0 50px rgba(0,0,0,.5);
+    transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1);
+    display:flex;flex-direction:column;font-family:var(--sans)}
+  #xb-drawer.open{transform:translateX(0)}
+  #xb-drawer header{display:flex;align-items:center;justify-content:space-between;padding:20px 22px 12px}
+  #xb-drawer header .t{font-family:var(--display);font-size:22px}
+  #xb-close{background:none;border:none;color:var(--ink-dim);font-size:26px;cursor:pointer;line-height:1}
+  .xb-tools{display:flex;align-items:center;gap:10px;padding:0 22px 12px}
+  #xb-counts{font-size:13px;color:var(--ink-dim);flex:1}
+  #xb-counts b{color:var(--ink)}
+  #xb-refresh{background:transparent;border:1px solid var(--glass-brd);color:var(--ink);border-radius:8px;padding:5px 10px;cursor:pointer;font-size:13px}
+  #xb-file{margin:0 22px 14px;display:block;text-align:center;background:var(--stalk);color:#fff;font-weight:700;
+    text-decoration:none;border-radius:10px;padding:10px;font-size:13px}
+  #xb-list{list-style:none;margin:0;padding:0 14px 30px;overflow-y:auto;flex:1}
+  .xb-iss{display:flex;gap:10px;padding:12px;border:1px solid var(--glass-brd);border-radius:10px;margin:8px 0;background:rgba(255,255,255,.02)}
+  .xb-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;margin-top:5px}
+  .xb-dot.open{background:#3fb950;box-shadow:0 0 8px rgba(63,185,80,.6)}
+  .xb-dot.closed{background:#a371f7}
+  .xb-iss .tt{font-weight:600;font-size:14px;line-height:1.35}
+  .xb-iss .tt a{color:var(--ink);text-decoration:none}
+  .xb-iss .tt a:hover{color:var(--stalk)}
+  .xb-iss .mt{font-size:11px;color:var(--ink-dim);margin-top:4px}
+  .xb-bd{font-size:9px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:999px;margin-left:6px}
+  .xb-bd.open{background:rgba(63,185,80,.15);color:#3fb950}
+  .xb-bd.closed{background:rgba(163,113,247,.15);color:#a371f7}
+  .xb-empty,.xb-err{color:var(--ink-dim);font-style:italic;padding:14px;font-size:13px}
+  .xb-err{color:#ff7b72}
+</style>
+<button id="xb-launch">&#9873; Issues <span id="xb-badge">&middot;</span></button>
+<div id="xb-backdrop"></div>
+<aside id="xb-drawer" aria-label="Page issues">
+  <header><span class="t">Page Issues</span><button id="xb-close" aria-label="Close">&times;</button></header>
+  <div class="xb-tools"><span id="xb-counts">Loading&hellip;</span><button id="xb-refresh">&#8635;</button></div>
+  <a id="xb-file" target="_blank" rel="noopener">+ File an issue</a>
+  <ul id="xb-list"></ul>
+</aside>
+<script>
+(function(){
+  var REPO='aryehxbeam/previews';
+  var seg=location.pathname.replace(/\/+$/,'').split('/').pop()||'home';
+  var LABEL='page:'+seg;
+  var $=function(id){return document.getElementById(id);};
+  $('xb-file').href='https://github.com/'+REPO+'/issues/new?labels='+encodeURIComponent(LABEL)+
+    '&title='+encodeURIComponent('['+seg+'] ')+'&body='+encodeURIComponent('Page: '+location.href+'\n\n');
+  function fmt(s){try{return new Date(s).toLocaleDateString(undefined,{month:'short',day:'numeric'});}catch(e){return'';}}
+  function render(issues){
+    var open=issues.filter(function(i){return i.state==='open';});
+    var closed=issues.filter(function(i){return i.state==='closed';});
+    $('xb-badge').textContent=open.length;
+    $('xb-counts').innerHTML='<b>'+open.length+'</b> open &middot; <b>'+closed.length+'</b> resolved';
+    if(!issues.length){$('xb-list').innerHTML='<div class="xb-empty">No issues for this page yet. Be the first.</div>';return;}
+    $('xb-list').innerHTML=open.concat(closed).map(function(i){var st=i.state;
+      return '<li class="xb-iss"><span class="xb-dot '+st+'"></span><div>'+
+        '<div class="tt"><a href="'+i.html_url+'" target="_blank" rel="noopener">'+i.title.replace(/</g,'&lt;')+'</a>'+
+        '<span class="xb-bd '+st+'">'+(st==='open'?'open':'resolved')+'</span></div>'+
+        '<div class="mt">#'+i.number+' &middot; '+(st==='closed'?'resolved '+fmt(i.closed_at):'opened '+fmt(i.created_at))+
+        ' &middot; '+(i.user?i.user.login:'?')+'</div></div></li>';}).join('');
+  }
+  function load(){
+    $('xb-counts').textContent='Loading…';
+    fetch('https://api.github.com/repos/'+REPO+'/issues?state=all&per_page=100&labels='+encodeURIComponent(LABEL)+'&_cb='+Date.now(),
+      {headers:{'Accept':'application/vnd.github+json'},cache:'no-store'})
+      .then(function(r){if(r.status===403)throw new Error('GitHub API rate limit (60/hr). Try later.');if(!r.ok)throw new Error('GitHub API '+r.status);return r.json();})
+      .then(function(d){render(d.filter(function(i){return !i.pull_request;}));})
+      .catch(function(e){$('xb-counts').textContent='';$('xb-list').innerHTML='<div class="xb-err">'+e.message+'</div>';});
+  }
+  function setOpen(o){$('xb-drawer').classList.toggle('open',o);$('xb-backdrop').classList.toggle('show',o);}
+  $('xb-launch').addEventListener('click',function(){setOpen(true);});
+  $('xb-close').addEventListener('click',function(){setOpen(false);});
+  $('xb-backdrop').addEventListener('click',function(){setOpen(false);});
+  $('xb-refresh').addEventListener('click',load);
+  load();
+})();
+</script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.10.0/styles/atom-one-dark.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.10.0/highlight.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.10.0/languages/clojure.min.js"></script>
@@ -524,8 +599,8 @@ console.log(shouldIEatThis(rhubarb, "stalk")); // 🥧 proceed to pie</code></pr
 <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
 <script>
   mermaid.initialize({ startOnLoad: true, theme: 'dark', securityLevel: 'loose', themeVariables: {
-    darkMode: true, background: '#1a0a14', primaryColor: '#2a0e22', primaryTextColor: '#fbe9f1',
-    primaryBorderColor: '#ff2d78', lineColor: '#c79bb1', secondaryColor: '#0e8c5a', tertiaryColor: '#2a0e22' } });
+    darkMode:true, background:'#1a0a14', primaryColor:'#2a0e22', primaryTextColor:'#fbe9f1',
+    primaryBorderColor:'#ff2d78', lineColor:'#c79bb1', secondaryColor:'#0e8c5a', tertiaryColor:'#2a0e22' } });
 </script>
 </body>
 </html>
