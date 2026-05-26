@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Issues Panel POC</title>
+<style>
+  :root{--bg:#0f1115;--panel:#161922;--panel2:#1e2230;--ink:#e8eaf0;--dim:#9aa1b1;--brd:#2a2f3d;--accent:#7c5cff;--open:#3fb950;--closed:#a371f7;--amber:#d29922}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Inter","Segoe UI",sans-serif;line-height:1.6}
+  .wrap{max-width:760px;margin:0 auto;padding:56px 24px 100px}
+  h1{font-size:34px;letter-spacing:-0.02em;margin:0 0 6px}
+  .sub{color:var(--dim);font-size:17px;margin-bottom:28px}
+  .card{background:var(--panel);border:1px solid var(--brd);border-radius:12px;padding:18px 20px;margin:16px 0}
+  code{background:var(--panel2);padding:2px 6px;border-radius:4px;color:#4cc9a4;font-size:13px}
+  .toolbar{display:flex;align-items:center;gap:12px;margin:24px 0 12px;flex-wrap:wrap}
+  .counts{font-size:14px;color:var(--dim)}
+  .counts b{color:var(--ink)}
+  button,a.btn{font:inherit;font-size:13px;font-weight:600;border-radius:8px;padding:8px 14px;cursor:pointer;border:1px solid var(--brd);text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+  .btn-primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  .btn-ghost{background:transparent;color:var(--ink)}
+  ul.issues{list-style:none;padding:0;margin:0}
+  li.issue{display:flex;gap:12px;align-items:flex-start;padding:14px 16px;border:1px solid var(--brd);border-radius:10px;margin:10px 0;background:var(--panel)}
+  .dot{width:14px;height:14px;border-radius:50%;flex-shrink:0;margin-top:5px}
+  .dot.open{background:var(--open);box-shadow:0 0 8px rgba(63,185,80,.5)}
+  .dot.closed{background:var(--closed)}
+  .issue .title{font-weight:600}
+  .issue .title a{color:var(--ink);text-decoration:none}
+  .issue .title a:hover{color:var(--accent)}
+  .issue .meta{font-size:12px;color:var(--dim);margin-top:3px}
+  .state-badge{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:2px 8px;border-radius:999px;margin-left:8px;vertical-align:1px}
+  .state-badge.open{background:rgba(63,185,80,.15);color:var(--open)}
+  .state-badge.closed{background:rgba(163,113,247,.15);color:var(--closed)}
+  .empty,.err{color:var(--dim);font-style:italic;padding:12px 0}
+  .err{color:#ff7b72}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Issues Panel</h1>
+  <div class="sub">Resolvable items for this page, backed by GitHub Issues. Open vs. resolved is real state - close an issue on GitHub and it shows here as resolved.</div>
+
+  <div class="card">
+    <p style="margin:0">This panel reads issues from <code>aryehxbeam/previews</code> labeled <code id="lbl">page:issues-poc</code> via the public GitHub API (no auth, no backend). "File an issue" deep-links to GitHub's prefilled form; resolving happens by closing the issue on GitHub.</p>
+  </div>
+
+  <div class="toolbar">
+    <span class="counts" id="counts">Loading…</span>
+    <span style="flex:1"></span>
+    <button class="btn-ghost" id="refresh">↻ Refresh</button>
+    <a class="btn btn-primary" id="file" target="_blank" rel="noopener">+ File an issue</a>
+  </div>
+
+  <ul class="issues" id="list"></ul>
+</div>
+
+<script>
+(function(){
+  var REPO = 'aryehxbeam/previews';
+  var LABEL = 'page:issues-poc';
+  document.getElementById('lbl').textContent = LABEL;
+  document.getElementById('file').href =
+    'https://github.com/' + REPO + '/issues/new?labels=' + encodeURIComponent(LABEL) +
+    '&title=' + encodeURIComponent('[issues-poc] ') +
+    '&body=' + encodeURIComponent('Page: ' + location.href + '\n\n');
+
+  function fmtDate(s){ try { return new Date(s).toLocaleDateString(undefined,{month:'short',day:'numeric'}); } catch(e){ return ''; } }
+
+  function render(issues){
+    var list = document.getElementById('list');
+    var open = issues.filter(function(i){ return i.state === 'open'; });
+    var closed = issues.filter(function(i){ return i.state === 'closed'; });
+    document.getElementById('counts').innerHTML =
+      '<b>' + open.length + '</b> open &middot; <b>' + closed.length + '</b> resolved';
+    if (!issues.length){ list.innerHTML = '<div class="empty">No issues filed for this page yet. Be the first.</div>'; return; }
+    var ordered = open.concat(closed);
+    list.innerHTML = ordered.map(function(i){
+      var st = i.state;
+      return '<li class="issue">' +
+        '<span class="dot ' + st + '"></span>' +
+        '<div><div class="title"><a href="' + i.html_url + '" target="_blank" rel="noopener">' +
+        i.title.replace(/</g,'&lt;') + '</a>' +
+        '<span class="state-badge ' + st + '">' + (st === 'open' ? 'open' : 'resolved') + '</span></div>' +
+        '<div class="meta">#' + i.number + ' &middot; opened ' + fmtDate(i.created_at) +
+        (st==='closed' && i.closed_at ? (' &middot; resolved ' + fmtDate(i.closed_at)) : '') +
+        ' &middot; by ' + (i.user ? i.user.login : '?') + '</div></div></li>';
+    }).join('');
+  }
+
+  function load(){
+    document.getElementById('counts').textContent = 'Loading…';
+    var url = 'https://api.github.com/repos/' + REPO + '/issues?state=all&per_page=100&labels=' + encodeURIComponent(LABEL);
+    fetch(url, { headers: { 'Accept': 'application/vnd.github+json' } })
+      .then(function(r){
+        if (r.status === 403) throw new Error('GitHub API rate limit hit (60/hr unauthenticated). Try again shortly.');
+        if (!r.ok) throw new Error('GitHub API ' + r.status);
+        return r.json();
+      })
+      .then(function(data){ render(data.filter(function(i){ return !i.pull_request; })); })
+      .catch(function(e){
+        document.getElementById('counts').textContent = '';
+        document.getElementById('list').innerHTML = '<div class="err">' + e.message + '</div>';
+      });
+  }
+  document.getElementById('refresh').addEventListener('click', load);
+  load();
+})();
+</script>
+</body>
+</html>
