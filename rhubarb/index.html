@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RHUBARB: The Vegetable That Thinks It's a Fruit</title>
+<style>
+  :root {
+    --stalk: #ff2d78;
+    --stalk-deep: #c2185b;
+    --leaf: #36d399;
+    --leaf-deep: #0e8c5a;
+    --poison: #b6ff3c;
+    --gold: #ffd54a;
+    --ink: #fbe9f1;
+    --ink-dim: #c79bb1;
+    --bg0: #1a0a14;
+    --bg1: #2a0e22;
+    --glass: rgba(255, 45, 120, 0.06);
+    --glass-brd: rgba(255, 45, 120, 0.22);
+    --mono: "JetBrains Mono", "Fira Code", ui-monospace, monospace;
+    --display: "Archivo Black", "Arial Black", -apple-system, sans-serif;
+    --sans: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background:
+      radial-gradient(1200px 800px at 15% -10%, rgba(255,45,120,0.18), transparent 60%),
+      radial-gradient(1000px 700px at 95% 10%, rgba(54,211,153,0.12), transparent 55%),
+      radial-gradient(900px 900px at 50% 120%, rgba(182,255,60,0.08), transparent 60%),
+      linear-gradient(160deg, var(--bg0), var(--bg1));
+    background-attachment: fixed;
+    color: var(--ink);
+    font-family: var(--sans);
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+  .wrap { max-width: 880px; margin: 0 auto; padding: 0 28px 120px; }
+
+  /* HERO */
+  .hero {
+    min-height: 92vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    position: relative;
+    padding: 40px 0;
+  }
+  .hero .kicker {
+    font-family: var(--mono);
+    letter-spacing: 0.4em;
+    text-transform: uppercase;
+    font-size: 12px;
+    color: var(--leaf);
+    margin-bottom: 18px;
+    animation: flicker 4s infinite;
+  }
+  @keyframes flicker { 0%,100%{opacity:1} 92%{opacity:1} 94%{opacity:0.4} 96%{opacity:1} }
+  .hero h1 {
+    font-family: var(--display);
+    font-size: clamp(56px, 13vw, 150px);
+    line-height: 0.86;
+    margin: 0;
+    letter-spacing: -0.03em;
+    background: linear-gradient(120deg, var(--stalk) 0%, var(--gold) 38%, var(--leaf) 72%, var(--poison) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-size: 240% auto;
+    animation: shimmer 6s linear infinite;
+    filter: drop-shadow(0 6px 30px rgba(255,45,120,0.4));
+  }
+  @keyframes shimmer { to { background-position: 240% center; } }
+  .hero .sub {
+    margin-top: 22px;
+    font-size: clamp(17px, 2.4vw, 24px);
+    color: var(--ink-dim);
+    max-width: 620px;
+    font-style: italic;
+  }
+  .hero .sub b { color: var(--ink); font-style: normal; }
+  .scroll-hint {
+    position: absolute;
+    bottom: 28px;
+    font-size: 12px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-dim);
+    animation: bob 2s ease-in-out infinite;
+  }
+  @keyframes bob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(8px)} }
+
+  .stalks { display: flex; gap: 6px; margin-top: 40px; }
+  .stalks i {
+    display: block;
+    width: 12px;
+    border-radius: 8px;
+    background: linear-gradient(var(--stalk-deep), var(--stalk));
+    box-shadow: 0 0 18px rgba(255,45,120,0.6);
+    animation: grow 1.6s ease-out backwards;
+  }
+  .stalks i:nth-child(1){height:46px;animation-delay:.0s}
+  .stalks i:nth-child(2){height:78px;animation-delay:.1s}
+  .stalks i:nth-child(3){height:62px;animation-delay:.2s}
+  .stalks i:nth-child(4){height:94px;animation-delay:.3s}
+  .stalks i:nth-child(5){height:54px;animation-delay:.4s}
+  .stalks i:nth-child(6){height:70px;animation-delay:.5s}
+  @keyframes grow { from { height:0; opacity:0 } }
+
+  /* SECTIONS */
+  section { margin: 80px 0; }
+  h2 {
+    font-family: var(--display);
+    font-size: clamp(30px, 5vw, 48px);
+    letter-spacing: -0.02em;
+    margin: 0 0 6px;
+    line-height: 1.05;
+  }
+  h2 .em {
+    background: linear-gradient(100deg, var(--stalk), var(--gold));
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  h2 .leaf {
+    background: linear-gradient(100deg, var(--leaf), var(--poison));
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .lead { color: var(--ink-dim); font-size: 18px; margin-bottom: 18px; }
+  h3 { font-family: var(--sans); font-weight: 800; font-size: 20px; margin: 28px 0 8px; }
+  p { margin: 0 0 16px; }
+  a { color: var(--stalk); }
+  .big-emoji { font-size: 40px; line-height: 1; }
+
+  .card {
+    background: var(--glass);
+    border: 1px solid var(--glass-brd);
+    border-radius: 18px;
+    padding: 22px 24px;
+    backdrop-filter: blur(8px);
+    box-shadow: 0 8px 40px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.05);
+    margin: 18px 0;
+  }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 680px) { .grid2 { grid-template-columns: 1fr; } }
+  .card.warn { border-color: rgba(182,255,60,0.4); background: rgba(182,255,60,0.06); }
+  .card.warn h3 { color: var(--poison); }
+  .card.danger { border-color: rgba(255,45,120,0.5); background: rgba(255,45,120,0.08); }
+
+  blockquote {
+    border: none;
+    margin: 24px 0;
+    padding: 18px 26px;
+    font-size: 22px;
+    font-style: italic;
+    line-height: 1.4;
+    border-left: 4px solid var(--gold);
+    background: linear-gradient(90deg, rgba(255,213,74,0.08), transparent);
+    border-radius: 0 12px 12px 0;
+  }
+  blockquote .by { display: block; font-size: 14px; font-style: normal; color: var(--ink-dim); margin-top: 8px; }
+
+  .stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 24px 0; }
+  @media (max-width: 680px) { .stat-row { grid-template-columns: 1fr; } }
+  .stat {
+    text-align: center;
+    padding: 20px 12px;
+    border-radius: 16px;
+    background: var(--glass);
+    border: 1px solid var(--glass-brd);
+  }
+  .stat .n {
+    font-family: var(--display);
+    font-size: 40px;
+    line-height: 1;
+    background: linear-gradient(120deg, var(--stalk), var(--gold));
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .stat .l { font-size: 12px; color: var(--ink-dim); text-transform: uppercase; letter-spacing: 0.08em; margin-top: 6px; }
+
+  /* CODE */
+  pre, code { font-family: var(--mono); }
+  pre {
+    background: rgba(10, 4, 8, 0.7) !important;
+    border: 1px solid var(--glass-brd);
+    border-radius: 14px;
+    padding: 18px 20px;
+    overflow-x: auto;
+    font-size: 13.5px;
+    line-height: 1.6;
+    box-shadow: 0 6px 30px rgba(0,0,0,0.4);
+    position: relative;
+  }
+  pre::before {
+    content: attr(data-lang);
+    position: absolute;
+    top: 8px; right: 14px;
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-dim);
+    font-family: var(--mono);
+  }
+  :not(pre) > code {
+    background: rgba(255,45,120,0.12);
+    color: var(--gold);
+    padding: 2px 7px;
+    border-radius: 6px;
+    font-size: 0.9em;
+  }
+
+  /* MERMAID */
+  .diagram {
+    background: rgba(10, 4, 8, 0.55);
+    border: 1px solid var(--glass-brd);
+    border-radius: 18px;
+    padding: 26px;
+    margin: 22px 0;
+    overflow-x: auto;
+    text-align: center;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.4);
+  }
+  .cap { text-align: center; font-size: 13px; color: var(--ink-dim); font-style: italic; margin-top: -8px; margin-bottom: 26px; }
+
+  ul.fancy { list-style: none; padding-left: 0; }
+  ul.fancy li { padding-left: 30px; position: relative; margin: 10px 0; }
+  ul.fancy li::before { content: "🥬"; position: absolute; left: 0; }
+
+  footer {
+    text-align: center;
+    margin-top: 100px;
+    padding-top: 30px;
+    border-top: 1px solid var(--glass-brd);
+    color: var(--ink-dim);
+    font-size: 13px;
+  }
+  .toxic-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 999px;
+    background: var(--poison);
+    color: #1a0a14;
+    font-weight: 800;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    box-shadow: 0 0 20px rgba(182,255,60,0.5);
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="hero">
+  <div class="kicker">A Dangerously Comprehensive Explainer</div>
+  <h1>RHUBARB</h1>
+  <div class="sub">The vegetable that <b>thinks it's a fruit</b>, whose leaves <b>can kill you</b>, that Marco Polo valued <b>more than saffron</b>, and that an entire region of Yorkshire grows <b>in the dark, by candlelight.</b></div>
+  <div class="stalks"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  <div class="scroll-hint">scroll if you dare ↓</div>
+</div>
+
+<section>
+  <h2>It's a <span class="em">Vegetable.</span> Stop Putting It In Pies.</h2>
+  <p class="lead">(We know you won't stop. We're not going to stop either.)</p>
+  <p>
+    Botanically, rhubarb is family <i>Polygonaceae</i>, genus <i>Rheum</i>, and the part you eat is the <b>petiole</b> - the leaf stalk. That's a vegetable by every definition that matters. And yet humanity has collectively decided it belongs in crumbles, jams, and pies alongside actual fruit. In 19th-century America it was literally nicknamed the <code>pie plant</code>.
+  </p>
+  <p>
+    Modern cultivated rhubarb is a <b>tetraploid</b> with <code>2n = 44</code> chromosomes, double the <code>2n = 22</code> of its wild ancestors. Evolution looked at a sour stalk and said: more.
+  </p>
+
+  <div class="card">
+    <h3>The Identity Crisis, In Code</h3>
+    <pre data-lang="python"><code class="language-python">from enum import Enum
+
+class Reality(Enum):
+    VEGETABLE = "petiole (leaf stalk)"
+    FRUIT = "what everyone insists on treating it as"
+
+def classify(plant: str) -> Reality:
+    """The single most contested function in botanical computing."""
+    if plant == "rhubarb":
+        legal_ruling = Reality.FRUIT   # NY court, 1947, for tariff reasons
+        botany       = Reality.VEGETABLE
+        return botany  # ...but the pie lobby disagrees
+    raise ValueError(f"{plant} is not nearly as confused as rhubarb")
+
+assert classify("rhubarb") is Reality.VEGETABLE  # cope</code></pre>
+    <p style="font-size:14px;color:var(--ink-dim);margin:0">Fun fact: a 1947 New York court really did rule rhubarb a fruit, because it was cheaper to import that way. Capitalism: 1, Botany: 0.</p>
+  </div>
+</section>
+
+<section>
+  <h2>The Leaves Will <span class="leaf">Absolutely Kill You</span> <span class="toxic-badge">toxic</span></h2>
+  <p class="lead">The stalk is a dessert. The leaf, six inches away, is a nephrotoxin.</p>
+  <p>
+    Rhubarb leaves contain <b>oxalic acid</b> (a nephrotoxin) plus some additional toxins science hasn't fully fingered yet. The same plant offers you a delightful stalk and a leaf that attacks your kidneys. Nature has a sense of humor and it is dark.
+  </p>
+
+  <div class="diagram">
+<pre class="mermaid">
+flowchart TD
+  A[You are holding a rhubarb] --> B{Which part?}
+  B -->|Stalk / petiole| C[Tart, crunchy, delicious]
+  B -->|Leaf| D{How much?}
+  C --> E[Make a pie 🥧]
+  D -->|A nibble| F[Probably fine, weirdo]
+  D -->|4 to 8 kg| G[Lethal dose for a 65kg adult]
+  G --> H[Oxalic acid vs your kidneys]
+  H --> I[Kidneys lose]
+  classDef good fill:#0e8c5a,stroke:#36d399,color:#eafff5
+  classDef bad fill:#7a0b2e,stroke:#ff2d78,color:#ffe3ee
+  class C,E,F good
+  class G,H,I bad
+</pre>
+  </div>
+  <div class="cap">Fig 1. A decision tree nobody should ever need, yet here we are.</div>
+
+  <div class="card danger">
+    <h3>Governments Have Made This Mistake. Twice.</h3>
+    <p style="margin:0">
+      During <b>World War I</b>, the British government printed instructions recommending rhubarb leaves as a food source. People died. During <b>World War II</b>, the <i>same instructions resurfaced</i> - "leading to further deaths." A bug shipped to production, rolled back, and then re-deployed 25 years later. Relatable.
+    </p>
+  </div>
+
+  <pre data-lang="rust"><code class="language-rust">// A type system that refuses to let you eat the wrong part.
+enum RhubarbPart {
+    Stalk,
+    Leaf,
+}
+
+fn is_edible(part: RhubarbPart) -> Result<&'static str, &'static str> {
+    match part {
+        RhubarbPart::Stalk => Ok("Enjoy responsibly with sugar."),
+        RhubarbPart::Leaf  => Err("Contains oxalic acid. The WWI pamphlet lied to you."),
+    }
+}
+
+fn main() {
+    // This compiles. Eating the Err variant does not.
+    println!("{:?}", is_edible(RhubarbPart::Leaf));
+}</code></pre>
+</section>
+
+<section>
+  <h2>Worth <span class="em">More Than Saffron</span></h2>
+  <p class="lead">For centuries rhubarb was a luxury import along the Silk Road. The root, dried, was the prize - prized as a medicine, traded like treasure.</p>
+
+  <div class="stat-row">
+    <div class="stat"><div class="n">1800</div><div class="l">years ago, first written record</div></div>
+    <div class="stat"><div class="n">14th</div><div class="l">century it reached Europe</div></div>
+    <div class="stat"><div class="n">#1</div><div class="l">"Russian rhubarb" most prized</div></div>
+  </div>
+
+  <p>
+    It shows up <b>1,800 years ago</b> in <i>The Divine Farmer's Herb-Root Classic</i>. By the 10th century <i>Rheum ribes</i> was eaten across the Islamic world. By the 14th it had reached Europe through Aleppo and Smyrna as <b>"Turkish rhubarb."</b> Marco Polo went hunting for it in the mountains of Tangut province, where it reportedly cost more than <b>cinnamon, opium, and saffron combined.</b>
+  </p>
+
+  <div class="diagram">
+<pre class="mermaid">
+sequenceDiagram
+  participant MP as Marco Polo
+  participant M as A Tangut Merchant
+  participant W as His Wallet
+  MP->>M: I hear you have the good rhubarb root
+  M-->>MP: We do. It is more precious than saffron.
+  MP->>W: How much saffron money do I have?
+  W-->>MP: ...all of it. You have all of it.
+  MP->>M: Take the saffron money.
+  M-->>MP: And the cinnamon money.
+  M-->>MP: And the opium money.
+  MP->>MP: Writes it down so people doubt me for 700 years
+</pre>
+  </div>
+  <div class="cap">Fig 2. A dramatization. Probably.</div>
+
+  <p>The price-tracking, of course, must be queryable:</p>
+  <pre data-lang="sql"><code class="language-sql">-- Which Silk Road luxuries did dried rhubarb root out-price?
+SELECT good,
+       price_per_oz_silver,
+       CASE WHEN price_per_oz_silver &lt; (SELECT price_per_oz_silver
+                                        FROM goods WHERE good = 'rhubarb_root')
+            THEN 'cheaper than rhubarb, lol'
+            ELSE 'somehow even pricier'
+       END AS verdict
+FROM goods
+WHERE good IN ('saffron', 'cinnamon', 'opium', 'rhubarb_root')
+ORDER BY price_per_oz_silver DESC;</code></pre>
+</section>
+
+<section>
+  <h2>The <span class="leaf">Rhubarb Triangle</span> 🔺</h2>
+  <p class="lead">There is a region of Yorkshire where rhubarb is grown in total darkness and harvested by candlelight. This is real. This is a job people have.</p>
+  <p>
+    "Forced rhubarb" is grown in heated sheds with <b>all other light excluded</b>, then harvested by candle so stray daylight doesn't spoil it. The result is a sweeter, more tender pink stalk. The practice is concentrated in a triangle between three towns: <b>Wakefield, Leeds, and Morley</b> - the legendary Rhubarb Triangle. You can supposedly hear the stalks <i>creak</i> as they grow in the dark.
+  </p>
+
+  <div class="diagram">
+<pre class="mermaid">
+stateDiagram-v2
+  [*] --> FieldGrown: planted outdoors
+  FieldGrown --> ChilledRoots: left through winter frost
+  ChilledRoots --> DarkShed: moved into heated, lightless shed
+  DarkShed --> GrowingByCandle: roots burn stored energy
+  GrowingByCandle --> GrowingByCandle: creaks audibly (!)
+  GrowingByCandle --> HarvestByCandlelight: tender pink stalks
+  HarvestByCandlelight --> [*]: shipped as premium "forced" rhubarb
+  note right of GrowingByCandle
+    No daylight allowed.
+    Harvesters work by candle.
+    The stalks reportedly squeak.
+  end note
+</pre>
+  </div>
+  <div class="cap">Fig 3. The lifecycle of forced rhubarb, a plant grown like a vampire.</div>
+
+  <div class="card">
+    <h3>Forcing, Modeled In Clojure</h3>
+    <pre data-lang="clojure"><code class="language-clojure">(def rhubarb-triangle #{:wakefield :leeds :morley})
+
+(defn force-rhubarb
+  "Grow rhubarb in the dark. Returns sweeter, pinker, creakier stalks."
+  [root]
+  (-> root
+      (assoc :light :absolutely-none
+             :harvested-by :candlelight)
+      (update :sweetness * 1.4)
+      (update :tenderness * 1.6)
+      (assoc :sound-effect "🎻 faint creaking")))
+
+(->> (repeatedly 3 #(force-rhubarb {:sweetness 5 :tenderness 5}))
+     (map :sound-effect))
+;; => ("🎻 faint creaking" "🎻 faint creaking" "🎻 faint creaking")</code></pre>
+  </div>
+</section>
+
+<section>
+  <h2>Assorted <span class="em">Rhubarb Lore</span></h2>
+  <div class="grid2">
+    <div class="card">
+      <span class="big-emoji">🍓</span>
+      <h3>The Unhappy Marriage</h3>
+      <p style="margin:0;font-size:15px">Strawberry-rhubarb is a classic pairing, but some "rhubarb purists jokingly consider this a rather unhappy marriage." Divorce proceedings ongoing since approximately 1860.</p>
+    </div>
+    <div class="card">
+      <span class="big-emoji">🇫🇮</span>
+      <h3>Finnish Mead</h3>
+      <p style="margin:0;font-size:15px">Finland makes <i>sima</i>, a mead variation, with rhubarb. Because if your plant can be a fruit, a vegetable, AND a poison, it can certainly also be an alcohol.</p>
+    </div>
+    <div class="card">
+      <span class="big-emoji">🇺🇸</span>
+      <h3>Jefferson's Spinach Error</h3>
+      <p style="margin:0;font-size:15px">Thomas Jefferson planted <i>R. undulatum</i> at Monticello in 1809, noting the leaves were "excellent as Spinach." The leaves which, again, are poisonous. Founding Father, questionable forager.</p>
+    </div>
+    <div class="card">
+      <span class="big-emoji">🌱</span>
+      <h3>Earlier Than You Think</h3>
+      <p style="margin:0;font-size:15px">John Bartram grew rhubarb in Philadelphia in the <b>1730s</b> - decades before the usual "arrived in the 1820s" story. The timeline, like the plant, is contested.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <blockquote>
+    "Esculent rhubarb, the leaves excellent as Spinach."
+    <span class="by">- Thomas Jefferson, 1809, describing a plant whose leaves would have poisoned him</span>
+  </blockquote>
+
+  <h3>One Last Function</h3>
+  <pre data-lang="javascript"><code class="language-javascript">const rhubarb = {
+  isVegetable: true,
+  treatedAsFruit: true,
+  leavesEdible: false,        // do NOT flip this to true, WWI
+  pricierThanSaffron: "historically, yes",
+  grownInTheDark: ["Wakefield", "Leeds", "Morley"],
+  creaks: true,
+};
+
+function shouldIEatThis({ leavesEdible }, part) {
+  if (part === "leaf" && !leavesEdible) {
+    throw new Error("Put it down. Read a WWI pamphlet. Actually, don't.");
+  }
+  return "🥧 proceed to pie";
+}
+
+console.log(shouldIEatThis(rhubarb, "stalk")); // 🥧 proceed to pie</code></pre>
+</section>
+
+<footer>
+  Sourced (lovingly, sarcastically) from <a href="https://en.wikipedia.org/wiki/Rhubarb">Wikipedia: Rhubarb</a>.<br>
+  No leaves were consumed in the making of this page. 🥬💀
+</footer>
+
+</div>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.10.0/styles/atom-one-dark.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.10.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.10.0/languages/clojure.min.js"></script>
+<script>hljs.highlightAll();</script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'dark',
+    securityLevel: 'loose',
+    themeVariables: {
+      darkMode: true,
+      background: '#1a0a14',
+      primaryColor: '#2a0e22',
+      primaryTextColor: '#fbe9f1',
+      primaryBorderColor: '#ff2d78',
+      lineColor: '#c79bb1',
+      secondaryColor: '#0e8c5a',
+      tertiaryColor: '#2a0e22'
+    }
+  });
+</script>
+</body>
+</html>
