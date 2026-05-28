@@ -105,12 +105,22 @@
   <aside>
     <div class="filter-section">
       <h3>Your partners <span class="count" id="partner-count"></span></h3>
-      <textarea id="partner-input" rows="6"
-                placeholder="Paste partner names — one per line or comma-separated. Leave blank to use samples (Databricks, Snowflake, ...)."
+      <textarea id="partner-input" rows="5"
+                placeholder="Paste partner names — one per line or comma-separated."
                 style="width:100%;padding:8px;border-radius:8px;border:1px solid var(--border);background:#fff;color:var(--text);font:13px/1.45 -apple-system,BlinkMacSystemFont,'Inter','Segoe UI',Helvetica,Arial,sans-serif;resize:vertical;"></textarea>
       <div style="display:flex;gap:6px;margin-top:6px;">
         <button class="btn" id="partner-clear" style="flex:1;font-size:11px;">clear</button>
         <button class="btn" id="partner-sample" style="flex:1;font-size:11px;">use samples</button>
+      </div>
+    </div>
+    <div class="filter-section">
+      <h3>Your accounts <span class="count" id="account-count"></span></h3>
+      <textarea id="account-input" rows="5"
+                placeholder="Paste account names — one per line or comma-separated. Used for {account} fills."
+                style="width:100%;padding:8px;border-radius:8px;border:1px solid var(--border);background:#fff;color:var(--text);font:13px/1.45 -apple-system,BlinkMacSystemFont,'Inter','Segoe UI',Helvetica,Arial,sans-serif;resize:vertical;"></textarea>
+      <div style="display:flex;gap:6px;margin-top:6px;">
+        <button class="btn" id="account-clear" style="flex:1;font-size:11px;">clear</button>
+        <button class="btn" id="account-sample" style="flex:1;font-size:11px;">use samples</button>
       </div>
     </div>
     <div class="filter-section">
@@ -144,18 +154,20 @@
 // These survive the temp_consolidated_tools deprecation.
 
 const SAMPLE_PARTNERS = ["Burger King", "McDonald's", "Nvidia", "Sonic", "Sonic Electronix", "Sonic Team Junior", "Sonic Youth", "SonicWall", "Taco Bell", "Wendy's", "ZARA", "Zendesk"];
+const SAMPLE_ACCOUNTS = ["Disney", "AirBnB", "Shake Shack", "The Kooples", "Sephora", "C.H. Robinson", "John Deere", "Humana", "Pave", "The Motley Fool", "Resolve.ai", "Onebrief"];
 
-// Partner fills are mutated at runtime from the sidebar input.
-// {partner}, {partner_a}, {partner_b}, {partner_c} all draw from the same user-supplied list.
+// Partner & account fills are mutated at runtime from the sidebar inputs.
+// {partner}, {partner_a}, {partner_b}, {partner_c} all draw from the partner list.
+// {account}, {account_a}, {account_b}, {account_c} all draw from the account list.
 const PLACEHOLDERS = {
   partner:     [...SAMPLE_PARTNERS],
   partner_a:   [...SAMPLE_PARTNERS],
   partner_b:   [...SAMPLE_PARTNERS],
   partner_c:   [...SAMPLE_PARTNERS],
-  account:     ["Disney", "AirBnB", "Shake Shack", "The Kooples", "Sephora", "C.H. Robinson", "John Deere"],
-  account_a:   ["Resolve.ai", "Onebrief"],
-  account_b:   ["The Motley Fool", "Pave"],
-  account_c:   ["Humana", "Sephora"],
+  account:     [...SAMPLE_ACCOUNTS],
+  account_a:   [...SAMPLE_ACCOUNTS],
+  account_b:   [...SAMPLE_ACCOUNTS],
+  account_c:   [...SAMPLE_ACCOUNTS],
   population:  ["Customers", "Prospects", "Open Opportunities", "Closed Won"],
   owner:       ["Holden Miller", "Dan Glazer", "Ivka Shepard", "Reid Martin"],
   region:      ["EMEA", "APAC", "California", "Germany", "UK"],
@@ -450,9 +462,10 @@ const ALL_VARIANT_TYPES = [...new Set(INTENTS.flatMap(i => Object.keys(i.variant
 
 function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
-const LS_KEY = "mcp_test_grid_partners";
+const LS_PARTNERS = "mcp_test_grid_partners";
+const LS_ACCOUNTS = "mcp_test_grid_accounts";
 
-function parsePartners(raw) {
+function parseList(raw) {
   return raw.split(/[\n,]+/).map(s => s.trim()).filter(Boolean);
 }
 
@@ -466,12 +479,18 @@ function applyPartners(list) {
   if (countEl) countEl.textContent = list.length ? `(${list.length})` : `(samples)`;
 }
 
-function loadPartnersFromStorage() {
-  try { return localStorage.getItem(LS_KEY) || ""; } catch { return ""; }
+function applyAccounts(list) {
+  const effective = list.length ? list : SAMPLE_ACCOUNTS;
+  PLACEHOLDERS.account   = effective;
+  PLACEHOLDERS.account_a = effective;
+  PLACEHOLDERS.account_b = effective;
+  PLACEHOLDERS.account_c = effective;
+  const countEl = document.getElementById("account-count");
+  if (countEl) countEl.textContent = list.length ? `(${list.length})` : `(samples)`;
 }
-function savePartnersToStorage(raw) {
-  try { localStorage.setItem(LS_KEY, raw); } catch {}
-}
+
+function lsLoad(key) { try { return localStorage.getItem(key) || ""; } catch { return ""; } }
+function lsSave(key, raw) { try { localStorage.setItem(key, raw); } catch {} }
 function escapeHtml(s) { return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
 function highlightPlaceholders(s) {
   return escapeHtml(s).replace(/\{([a-z_]+)\}/g, '<span class="ph">{$1}</span>');
@@ -654,26 +673,43 @@ function init() {
   $("#stat-usecases").textContent = ALL_USE_CASES.length;
 
   // Restore partners from localStorage
-  const savedRaw = loadPartnersFromStorage();
   const partnerInput = $("#partner-input");
-  partnerInput.value = savedRaw;
-  applyPartners(parsePartners(savedRaw));
-
+  partnerInput.value = lsLoad(LS_PARTNERS);
+  applyPartners(parseList(partnerInput.value));
   partnerInput.addEventListener("input", e => {
-    const raw = e.target.value;
-    savePartnersToStorage(raw);
-    applyPartners(parsePartners(raw));
-    render(); // re-render so the placeholder fills list in each card updates
+    lsSave(LS_PARTNERS, e.target.value);
+    applyPartners(parseList(e.target.value));
+    render();
   });
   $("#partner-clear").addEventListener("click", () => {
-    partnerInput.value = ""; savePartnersToStorage(""); applyPartners([]); render(); toast("cleared — using samples");
+    partnerInput.value = ""; lsSave(LS_PARTNERS, ""); applyPartners([]); render(); toast("cleared — using sample partners");
   });
   $("#partner-sample").addEventListener("click", () => {
     partnerInput.value = SAMPLE_PARTNERS.join("\n");
-    savePartnersToStorage(partnerInput.value);
+    lsSave(LS_PARTNERS, partnerInput.value);
     applyPartners(SAMPLE_PARTNERS);
     render();
     toast("loaded sample partners");
+  });
+
+  // Restore accounts from localStorage
+  const accountInput = $("#account-input");
+  accountInput.value = lsLoad(LS_ACCOUNTS);
+  applyAccounts(parseList(accountInput.value));
+  accountInput.addEventListener("input", e => {
+    lsSave(LS_ACCOUNTS, e.target.value);
+    applyAccounts(parseList(e.target.value));
+    render();
+  });
+  $("#account-clear").addEventListener("click", () => {
+    accountInput.value = ""; lsSave(LS_ACCOUNTS, ""); applyAccounts([]); render(); toast("cleared — using sample accounts");
+  });
+  $("#account-sample").addEventListener("click", () => {
+    accountInput.value = SAMPLE_ACCOUNTS.join("\n");
+    lsSave(LS_ACCOUNTS, accountInput.value);
+    applyAccounts(SAMPLE_ACCOUNTS);
+    render();
+    toast("loaded sample accounts");
   });
 
   renderFilters();
