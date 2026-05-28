@@ -124,6 +124,16 @@
       </div>
     </div>
     <div class="filter-section">
+      <h3>Partner tags <span class="count" id="tag-count"></span></h3>
+      <textarea id="tag-input" rows="4"
+                placeholder="Paste partner tags — one per line or comma-separated. Used for {tag} fills."
+                style="width:100%;padding:8px;border-radius:8px;border:1px solid var(--border);background:#fff;color:var(--text);font:13px/1.45 -apple-system,BlinkMacSystemFont,'Inter','Segoe UI',Helvetica,Arial,sans-serif;resize:vertical;"></textarea>
+      <div style="display:flex;gap:6px;margin-top:6px;">
+        <button class="btn" id="tag-clear" style="flex:1;font-size:11px;">clear</button>
+        <button class="btn" id="tag-sample" style="flex:1;font-size:11px;">use samples</button>
+      </div>
+    </div>
+    <div class="filter-section">
       <h3>Use case <span class="count" id="use-case-count"></span></h3>
       <div class="chip-group" id="use-case-filter"></div>
     </div>
@@ -155,6 +165,7 @@
 
 const SAMPLE_PARTNERS = ["Burger King", "McDonald's", "Nvidia", "Sonic", "Sonic Electronix", "Sonic Team Junior", "Sonic Youth", "SonicWall", "Taco Bell", "Wendy's", "ZARA", "Zendesk"];
 const SAMPLE_ACCOUNTS = ["Saber Protocol", "Ptero DAO", "Legion Flux Labs", "Transparent Hive Core", "Omega Allosaur", "Cougar Haven Industries", "Terrestrial Oracle Consortium", "Active Oscorp", "Sisko Dynamics", "Open Fossil", "Hub Oracle Net", "K Technologies", "Astro Bay West", "Diamond Spark Smith", "Emerald Process Union", "Void Star Connect", "Transparent Spirit Energy", "Raptor Flash GmbH", "Scarlet Comet Pty", "Momentum Scarab Robotics", "Ivory Polygon International", "Atomic Tiger Scape", "Stellar Wind West", "Green Brain SF", "Express Meteor Power", "Templar Moon Orbital", "Chrome Delos", "Queue Signal Pharma", "Digi Log Colony"];
+const SAMPLE_TAGS = ["blue", "chartreuse", "orange", "pink", "puce"];
 
 // Partner & account fills are mutated at runtime from the sidebar inputs.
 // {partner}, {partner_a}, {partner_b}, {partner_c} all draw from the partner list.
@@ -168,10 +179,10 @@ const PLACEHOLDERS = {
   account_a:   [...SAMPLE_ACCOUNTS],
   account_b:   [...SAMPLE_ACCOUNTS],
   account_c:   [...SAMPLE_ACCOUNTS],
+  tag:         [...SAMPLE_TAGS],
   population:  ["Customers", "Prospects", "Open Opportunities", "Closed Won"],
   owner:       ["Holden Miller", "Dan Glazer", "Ivka Shepard", "Reid Martin"],
   region:      ["EMEA", "APAC", "California", "Germany", "UK"],
-  tag:         ["EMEA PRIORITY", "VAR", "Tech Alliance", "Agency"],
   industry:    ["CMEG", "HR tech", "CTEM"],
   metric:      ["Potential Revenue", "partner score", "attribution"],
   N:           [3, 5, 10, 15],
@@ -465,6 +476,7 @@ function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
 const LS_PARTNERS = "mcp_test_grid_partners";
 const LS_ACCOUNTS = "mcp_test_grid_accounts";
+const LS_TAGS     = "mcp_test_grid_tags";
 
 function parseList(raw) {
   return raw.split(/[\n,]+/).map(s => s.trim()).filter(Boolean);
@@ -490,8 +502,26 @@ function applyAccounts(list) {
   if (countEl) countEl.textContent = list.length ? `(${list.length})` : `(samples)`;
 }
 
-function lsLoad(key) { try { return localStorage.getItem(key) || ""; } catch { return ""; } }
+function applyTags(list) {
+  const effective = list.length ? list : SAMPLE_TAGS;
+  PLACEHOLDERS.tag = effective;
+  const countEl = document.getElementById("tag-count");
+  if (countEl) countEl.textContent = list.length ? `(${list.length})` : `(samples)`;
+}
+
+function lsLoad(key) { try { return localStorage.getItem(key); } catch { return null; } }
 function lsSave(key, raw) { try { localStorage.setItem(key, raw); } catch {} }
+
+// Returns the stored value, or - on first visit (key never set) - seeds with the sample list.
+function lsLoadOrSeed(key, sampleList) {
+  const stored = lsLoad(key);
+  if (stored === null) {
+    const seeded = sampleList.join("\n");
+    lsSave(key, seeded);
+    return seeded;
+  }
+  return stored;
+}
 function escapeHtml(s) { return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
 function highlightPlaceholders(s) {
   return escapeHtml(s).replace(/\{([a-z_]+)\}/g, '<span class="ph">{$1}</span>');
@@ -698,9 +728,9 @@ function init() {
   $("#stat-variants").textContent = INTENTS.reduce((n, i) => n + Object.keys(i.variants).length, 0);
   $("#stat-usecases").textContent = ALL_USE_CASES.length;
 
-  // Restore partners from localStorage
+  // Restore partners from localStorage (seed with samples on first visit)
   const partnerInput = $("#partner-input");
-  partnerInput.value = lsLoad(LS_PARTNERS);
+  partnerInput.value = lsLoadOrSeed(LS_PARTNERS, SAMPLE_PARTNERS);
   applyPartners(parseList(partnerInput.value));
   partnerInput.addEventListener("input", e => {
     lsSave(LS_PARTNERS, e.target.value);
@@ -718,9 +748,9 @@ function init() {
     toast("loaded sample partners");
   });
 
-  // Restore accounts from localStorage
+  // Restore accounts from localStorage (seed with samples on first visit)
   const accountInput = $("#account-input");
-  accountInput.value = lsLoad(LS_ACCOUNTS);
+  accountInput.value = lsLoadOrSeed(LS_ACCOUNTS, SAMPLE_ACCOUNTS);
   applyAccounts(parseList(accountInput.value));
   accountInput.addEventListener("input", e => {
     lsSave(LS_ACCOUNTS, e.target.value);
@@ -736,6 +766,26 @@ function init() {
     applyAccounts(SAMPLE_ACCOUNTS);
     render();
     toast("loaded sample accounts");
+  });
+
+  // Restore tags from localStorage (seed with samples on first visit)
+  const tagInput = $("#tag-input");
+  tagInput.value = lsLoadOrSeed(LS_TAGS, SAMPLE_TAGS);
+  applyTags(parseList(tagInput.value));
+  tagInput.addEventListener("input", e => {
+    lsSave(LS_TAGS, e.target.value);
+    applyTags(parseList(e.target.value));
+    render();
+  });
+  $("#tag-clear").addEventListener("click", () => {
+    tagInput.value = ""; lsSave(LS_TAGS, ""); applyTags([]); render(); toast("cleared — using sample tags");
+  });
+  $("#tag-sample").addEventListener("click", () => {
+    tagInput.value = SAMPLE_TAGS.join("\n");
+    lsSave(LS_TAGS, tagInput.value);
+    applyTags(SAMPLE_TAGS);
+    render();
+    toast("loaded sample tags");
   });
 
   renderFilters();
