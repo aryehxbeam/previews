@@ -223,7 +223,7 @@ const INTENTS = [
     variants: {
       terse:    "{partner} overlaps",
       casual:   "do we overlap with {partner} at all",
-      typo:     "find me the population of shared customers with Optimisely",
+      typo:     "find me the population of shared customers with {partner_typo}",
       followup: "and what about {partner}",
       lang_fr:  "Combien d'overlaps ai-je avec {partner} ?",
     },
@@ -263,7 +263,7 @@ const INTENTS = [
     variants: {
       terse:  "{partner_a} {partner_b} overlap",
       casual: "pull joint customers for {partner_a} and {partner_b}",
-      typo:   "{partner_a} and commercetools customer overlap",
+      typo:   "{partner_a} and {partner_typo} customer overlap",
     },
     useCases: ["OVERLAPPING_RECORDS", "PARTNER_POPULATIONS"],
   },
@@ -545,14 +545,46 @@ function highlightPlaceholders(s) {
 }
 // Derived placeholders that re-shape the chosen name at fill time.
 // These let probes test how the agent handles common distortions
-// (lowercase, no-suffix, fuzzy domain) without baking literal examples in.
+// (lowercase, no-suffix, fuzzy domain, typo) without baking literal examples in.
 function deriveAccountForm(name, form) {
   switch (form) {
     case "lc":     return name.toLowerCase();
     case "short":  return name.replace(/\s+(Inc|LLC|Pty|GmbH|Co|Corp|Ltd|Group|International|Industries|Robotics|Consortium|Technologies|DAO|Protocol|Labs|Energy|Power|Orbital|Pharma|Colony)\.?$/i, "").trim();
     case "domain": return name.toLowerCase().replace(/[^a-z0-9]+/g, "") + ".com";
+    case "typo":   return mangle(name);
     default:       return name;
   }
+}
+
+// Introduce a single realistic typo: char swap, drop, double, or substitute.
+function mangle(name) {
+  if (!name || name.length < 3) return name;
+  const chars = name.split("");
+  // Pick an index in the inner portion of the name (skip first/last for readability)
+  const i = 1 + Math.floor(Math.random() * (chars.length - 2));
+  const op = Math.floor(Math.random() * 4);
+  switch (op) {
+    case 0: { // swap with neighbor
+      [chars[i], chars[i + 1]] = [chars[i + 1], chars[i]];
+      break;
+    }
+    case 1: { // drop
+      chars.splice(i, 1);
+      break;
+    }
+    case 2: { // double
+      chars.splice(i, 0, chars[i]);
+      break;
+    }
+    case 3: { // substitute with adjacent keyboard key (rough)
+      const adj = { a: "s", e: "r", i: "o", o: "i", u: "y", s: "a", t: "y", y: "u", r: "t" };
+      const c = chars[i].toLowerCase();
+      if (adj[c]) chars[i] = chars[i] === c ? adj[c] : adj[c].toUpperCase();
+      else chars.splice(i, 1);
+      break;
+    }
+  }
+  return chars.join("");
 }
 
 function fill(template) {
@@ -560,16 +592,13 @@ function fill(template) {
     // Direct hit
     if (PLACEHOLDERS[key]) return String(pick(PLACEHOLDERS[key]));
 
-    // Derived account forms: account_lc, account_short, account_domain
-    const accMatch = key.match(/^account_(lc|short|domain)$/);
+    // Derived account forms: account_lc, account_short, account_domain, account_typo
+    const accMatch = key.match(/^account_(lc|short|domain|typo)$/);
     if (accMatch) return deriveAccountForm(pick(PLACEHOLDERS.account), accMatch[1]);
 
-    // Derived partner forms: partner_short (drop suffix), partner_lc
-    const ptMatch = key.match(/^partner_(lc|short)$/);
-    if (ptMatch) {
-      const name = pick(PLACEHOLDERS.partner);
-      return ptMatch[1] === "lc" ? name.toLowerCase() : deriveAccountForm(name, "short");
-    }
+    // Derived partner forms: partner_lc, partner_short (drop suffix), partner_typo
+    const ptMatch = key.match(/^partner_(lc|short|typo)$/);
+    if (ptMatch) return deriveAccountForm(pick(PLACEHOLDERS.partner), ptMatch[1]);
 
     return `{${key}}`;
   });
