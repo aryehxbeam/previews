@@ -407,10 +407,10 @@ const INTENTS = [
     description: "Single-word or single-entity input with no verb. Tests intent inference.",
     templates: ["{account}", "{partner}"],
     variants: {
-      example_a: "brex",
-      example_b: "rubenstein law",
-      example_c: "trimble inc",
-      example_d: "the farmer's dog",
+      lowercase:    "{account_lc}",
+      no_suffix:    "{account_short}",
+      domain_only:  "{account_domain}",
+      partner_only: "{partner}",
     },
     useCases: ["ACCOUNT_CONTEXT", "PARTNER_CONTEXT", "PARTNERS_LOOKUP"],
   },
@@ -434,11 +434,12 @@ const INTENTS = [
   {
     name: "probe_ambiguous_name",
     sourceCategory: "cross-cutting",
-    description: "Partner/account name is a substring or alternative of a real entity.",
-    templates: ["Does {partial_name} have an open opportunity at {account}?"],
+    description: "Partner/account name is a substring, fuzzy match, or alternative of a real entity.",
+    templates: ["Does {partner_short} have an open opportunity at {account}?", "Is {account_lc} a customer of any partner?"],
     variants: {
-      example_a: "Does myriad have an open opportunity at Sephora",
-      example_b: "they also go by Digital First Media",
+      short_partner: "do {partner_short} customers overlap with us",
+      lowercase:     "is {account_lc} a partner customer",
+      alias:         "they also go by {alt_name} — any partner overlap?",
     },
     useCases: ["PARTNER_CONTEXT", "ACCOUNT_CONTEXT"],
   },
@@ -495,10 +496,35 @@ function escapeHtml(s) { return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").r
 function highlightPlaceholders(s) {
   return escapeHtml(s).replace(/\{([a-z_]+)\}/g, '<span class="ph">{$1}</span>');
 }
+// Derived placeholders that re-shape the chosen name at fill time.
+// These let probes test how the agent handles common distortions
+// (lowercase, no-suffix, fuzzy domain) without baking literal examples in.
+function deriveAccountForm(name, form) {
+  switch (form) {
+    case "lc":     return name.toLowerCase();
+    case "short":  return name.replace(/\s+(Inc|LLC|Pty|GmbH|Co|Corp|Ltd|Group|International|Industries|Robotics|Consortium|Technologies|DAO|Protocol|Labs|Energy|Power|Orbital|Pharma|Colony)\.?$/i, "").trim();
+    case "domain": return name.toLowerCase().replace(/[^a-z0-9]+/g, "") + ".com";
+    default:       return name;
+  }
+}
+
 function fill(template) {
   return template.replace(/\{([a-z_]+)\}/g, (_, key) => {
-    const vals = PLACEHOLDERS[key];
-    return vals ? String(pick(vals)) : `{${key}}`;
+    // Direct hit
+    if (PLACEHOLDERS[key]) return String(pick(PLACEHOLDERS[key]));
+
+    // Derived account forms: account_lc, account_short, account_domain
+    const accMatch = key.match(/^account_(lc|short|domain)$/);
+    if (accMatch) return deriveAccountForm(pick(PLACEHOLDERS.account), accMatch[1]);
+
+    // Derived partner forms: partner_short (drop suffix), partner_lc
+    const ptMatch = key.match(/^partner_(lc|short)$/);
+    if (ptMatch) {
+      const name = pick(PLACEHOLDERS.partner);
+      return ptMatch[1] === "lc" ? name.toLowerCase() : deriveAccountForm(name, "short");
+    }
+
+    return `{${key}}`;
   });
 }
 
