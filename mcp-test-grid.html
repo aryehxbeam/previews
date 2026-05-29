@@ -227,7 +227,7 @@ const INTENTS = [
       followup: "and what about {partner}",
       lang_fr:  "Combien d'overlaps ai-je avec {partner} ?",
     },
-    useCases: ["OVERLAPPING_RECORDS", "PARTNER_POPULATIONS", "OVERLAP_LIST_LINK"],
+    useCases: ["OVERLAPPING_RECORDS", "PARTNER_POPULATIONS"],
   },
   {
     name: "is_account_a_customer_of_partner",
@@ -289,7 +289,7 @@ const INTENTS = [
       casual:   "who are my partners",
       filtered: "List all connected partners with the tag {tag} sharing {population}.",
     },
-    useCases: ["PARTNERS_LOOKUP", "PARTNER_TAGS"],
+    useCases: ["PARTNER_CONTEXT", "PARTNER_TAGS"],
   },
   {
     name: "build_custom_report",
@@ -312,7 +312,7 @@ const INTENTS = [
       casual:   "help me identify my top {N} tech partnerships",
       followup: "can you list the potential revenue for the following partners: …",
     },
-    useCases: ["PARTNER_RECOMMENDATIONS", "PARTNERS_LOOKUP"],
+    useCases: ["PARTNER_RECOMMENDATIONS", "PARTNER_CONTEXT"],
   },
   {
     name: "top_partners_by_overlap",
@@ -323,7 +323,7 @@ const INTENTS = [
       casual:   "who has the highest overlap with my prospects",
       filtered: "top {N} opps with the most overlap with {tag} partners",
     },
-    useCases: ["OVERLAPPING_PARTNERS", "PARTNERS_LOOKUP"],
+    useCases: ["OVERLAPPING_PARTNERS", "PARTNER_CONTEXT"],
   },
   {
     name: "ecosystem_summary",
@@ -335,7 +335,7 @@ const INTENTS = [
       casual:   "give me the partner ecosystem context",
       followup: "how does this help me with pipeline generation",
     },
-    useCases: ["ECOSYSTEM_ACTIVITY", "ECOSYSTEM_LIST_LINK", "PARTNERS_LOOKUP"],
+    useCases: ["ECOSYSTEM_ACTIVITY", "PARTNER_CONTEXT"],
   },
   {
     name: "newest_partners",
@@ -346,7 +346,7 @@ const INTENTS = [
       casual:   "any net new accounts i should prioritize",
       followup: "which of my accounts have new partnerships identified",
     },
-    useCases: ["PARTNERS_LOOKUP", "ECOSYSTEM_ACTIVITY"],
+    useCases: ["PARTNER_CONTEXT", "ECOSYSTEM_ACTIVITY"],
   },
   {
     name: "high_impact_partners",
@@ -412,7 +412,7 @@ const INTENTS = [
       casual:   "are you not including offline partners",
       followup: "still don't see {partner}",
     },
-    useCases: ["CROSSBEAM_KNOWLEDGE", "PARTNERS_LOOKUP", "PARTNER_POPULATIONS"],
+    useCases: ["CROSSBEAM_KNOWLEDGE", "PARTNER_CONTEXT", "PARTNER_POPULATIONS"],
   },
   {
     name: "app_navigation_or_settings",
@@ -440,7 +440,7 @@ const INTENTS = [
       domain_only:  "{account_domain}",
       partner_only: "{partner}",
     },
-    useCases: ["ACCOUNT_CONTEXT", "PARTNER_CONTEXT", "PARTNERS_LOOKUP"],
+    useCases: ["ACCOUNT_CONTEXT", "PARTNER_CONTEXT"],
   },
   {
     name: "probe_non_english",
