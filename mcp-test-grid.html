@@ -278,10 +278,10 @@ const INTENTS = [
     name: "list_all_partners",
     sourceCategory: "List All Partners",
     description: "Enumerate all my partnerships, optionally sorted/filtered.",
-    templates: ["List all of my partners.", "Show me my partners tagged {tag}."],
+    templates: ["List all of my partners.", "show me my {tag} partners"],
     variants: {
       casual:   "who are my partners",
-      filtered: "List all connected partners with the tag {tag} sharing {population}.",
+      filtered: "show me my {tag} partners sharing {population}",
     },
     useCases: ["PARTNER_CONTEXT", "PARTNER_TAGS"],
   },
