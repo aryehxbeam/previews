@@ -180,7 +180,7 @@ const REAL_QUESTIONS = JSON.parse(REAL_QUESTIONS_JSON);
 // (added in bkocin-add-tool-groups, merged to main).
 // These survive the temp_consolidated_tools deprecation.
 
-const SAMPLE_PARTNERS = ["Booking.com", "Chewy Toys for Chewbaccas", "Dark Horse Comics", "Discord", "Facebook", "FreshBooks", "Google", "LEGO", "PlayStation", "REI", "Target"];
+const SAMPLE_PARTNERS = ["Dark Horse Comics", "Booking.com", "Discord", "Google", "LEGO", "PlayStation", "REI"];
 const SAMPLE_ACCOUNTS = ["Wasp Process Power", "Ripley Media", "Cobra Eclipse Industries", "Trinity Block", "Galactic Asteroid NY", "Alpine Shinra", "Turbo Buy n Large", "Hyper Wolverine", "Kent Ledger", "Viking Wave Alliance", "Master Wolverine Robotics", "Anubis Result Foundation", "Concept Cube Sphere", "Solar Scalar S.A.", "Hydra Cone Dynamics", "Carnotaur Ledger", "Peta Solution Global", "Nuclear Bridge Colony", "Zetta Arasaka", "Sea Token", "Polymer Meteor Syndicate", "Cone Initiative", "Transparent Ronin Link"];
 const SAMPLE_TAGS = ["blue", "chartreuse", "orange", "pink", "puce"];
 
@@ -513,7 +513,7 @@ const ALL_VARIANT_TYPES = [...new Set(INTENTS.flatMap(i => Object.keys(i.variant
 
 function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
-const LS_PARTNERS = "mcp_test_grid_partners_v3";
+const LS_PARTNERS = "mcp_test_grid_partners_v4";
 const LS_ACCOUNTS = "mcp_test_grid_accounts_v2";
 const LS_TAGS     = "mcp_test_grid_tags";
 
