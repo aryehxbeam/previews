@@ -222,7 +222,7 @@ const INTENTS = [
     templates: ["How many shared customers do we have with {partner}?", "What overlaps do we have with {partner}?"],
     variants: {
       casual:   "do we overlap with {partner} at all",
-      typo:     "find me the population of shared customers with {partner_typo}",
+      typo:     "find me teh populaton of shraed custmers with {partner_typo}",
       followup: "and what about {partner}",
       lang_fr:  "Combien d'overlaps ai-je avec {partner} ?",
     },
@@ -236,7 +236,7 @@ const INTENTS = [
     variants: {
       casual: "do our partners work with {account}",
       multi:  "Is {account} a customer of any of our partners?",
-      typo:   "does {partner} have the {account} as a cutomers",
+      typo:   "does {partner} hav teh {account} as a custmoer",
     },
     useCases: ["ACCOUNT_CONTEXT", "OVERLAPPING_PARTNERS"],
   },
@@ -259,7 +259,7 @@ const INTENTS = [
     templates: ["What are the joint customers between {partner_a} and {partner_b}?", "Show me the overlap between {partner_a}, {partner_b}, and {partner_c}."],
     variants: {
       casual: "pull joint customers for {partner_a} and {partner_b}",
-      typo:   "{partner_a} and {partner_typo} customer overlap",
+      typo:   "{partner_a} adn {partner_typo} custmer overlpa",
     },
     useCases: ["OVERLAPPING_RECORDS", "PARTNER_POPULATIONS"],
   },
@@ -378,7 +378,7 @@ const INTENTS = [
     templates: ["How is {metric} calculated?", "Why is {account} a top prospect?"],
     variants: {
       casual: "can you dig into attribution",
-      typo:   "wjere can I see the max number of overlaps we have left",
+      typo:   "wjere can i se teh max numbr of overlaps we hav lft",
     },
     useCases: ["CROSSBEAM_KNOWLEDGE"],
   },
@@ -561,32 +561,26 @@ function deriveAccountForm(name, form) {
   }
 }
 
-// Introduce a single realistic typo: char swap, drop, double, or substitute.
+// Introduce realistic typos: 2 edits on longer names, 1 on short ones.
 function mangle(name) {
   if (!name || name.length < 3) return name;
-  const chars = name.split("");
-  // Pick an index in the inner portion of the name (skip first/last for readability)
-  const i = 1 + Math.floor(Math.random() * (chars.length - 2));
-  const op = Math.floor(Math.random() * 4);
-  switch (op) {
-    case 0: { // swap with neighbor
-      [chars[i], chars[i + 1]] = [chars[i + 1], chars[i]];
-      break;
-    }
-    case 1: { // drop
-      chars.splice(i, 1);
-      break;
-    }
-    case 2: { // double
-      chars.splice(i, 0, chars[i]);
-      break;
-    }
-    case 3: { // substitute with adjacent keyboard key (rough)
-      const adj = { a: "s", e: "r", i: "o", o: "i", u: "y", s: "a", t: "y", y: "u", r: "t" };
-      const c = chars[i].toLowerCase();
-      if (adj[c]) chars[i] = chars[i] === c ? adj[c] : adj[c].toUpperCase();
-      else chars.splice(i, 1);
-      break;
+  let chars = name.split("");
+  const passes = name.length >= 6 ? 2 : 1;
+  for (let p = 0; p < passes; p++) {
+    if (chars.length < 3) break;
+    const i = 1 + Math.floor(Math.random() * (chars.length - 2));
+    const op = Math.floor(Math.random() * 4);
+    switch (op) {
+      case 0: { [chars[i], chars[i + 1]] = [chars[i + 1], chars[i]]; break; }
+      case 1: { chars.splice(i, 1); break; }
+      case 2: { chars.splice(i, 0, chars[i]); break; }
+      case 3: {
+        const adj = { a: "s", e: "r", i: "o", o: "i", u: "y", s: "a", t: "y", y: "u", r: "t" };
+        const c = chars[i].toLowerCase();
+        if (adj[c]) chars[i] = chars[i] === c ? adj[c] : adj[c].toUpperCase();
+        else chars.splice(i, 1);
+        break;
+      }
     }
   }
   return chars.join("");
