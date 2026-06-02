@@ -460,19 +460,6 @@ const INTENTS = [
 
   // ---- robustness probes ----
   {
-    name: "probe_terse_keyword",
-    sourceCategory: "cross-cutting",
-    description: "Single-word or single-entity input with no verb. Tests intent inference.",
-    templates: ["{account}", "{partner}"],
-    variants: {
-      lowercase:    "{account_lc}",
-      no_suffix:    "{account_short}",
-      domain_only:  "{account_domain}",
-      partner_only: "{partner}",
-    },
-    useCases: ["ACCOUNT_CONTEXT", "PARTNER_CONTEXT"],
-  },
-  {
     name: "probe_non_english",
     sourceCategory: "cross-cutting",
     description: "Question in French, Portuguese, or other non-English language.",
