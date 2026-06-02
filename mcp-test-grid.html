@@ -428,6 +428,48 @@ const INTENTS = [
     useCases: ["CROSSBEAM_KNOWLEDGE"],
   },
 
+  {
+    name: "contacts_at_account",
+    sourceCategory: "Partner Contacts",
+    description: "Who to engage at an account, via partner-shared contacts (key / primary-role signals).",
+    templates: ["Who should I talk to at {account}?", "Who are the contacts at {account} our partners have shared?"],
+    variants: {
+      terse:       "contacts at {account}",
+      via_partner: "who do I know at {account} through {partner}",
+      net_new:     "any contacts at {account} that aren't in my CRM",
+      casual:      "who's my warm intro into {account}",
+    },
+    useCases: ["PARTNER_CONTACTS", "OVERLAPPING_PARTNERS"],
+  },
+
+  // ---- chained / multi-tool: one ask, agent orchestrates 2+ tools ----
+  {
+    name: "chain_overlap_then_contacts",
+    sourceCategory: "Chained / multi-step",
+    description: "Find which partners have an account, then who to engage there. Agent chains overlap-partners → partner-contacts.",
+    templates: ["Is {account} a customer of any of our partners, and who should I talk to there?"],
+    variants: {
+      casual: "who's working {account} and who do I reach out to",
+    },
+    useCases: ["OVERLAPPING_PARTNERS", "PARTNER_CONTACTS"],
+  },
+  {
+    name: "chain_recommend_then_contacts",
+    sourceCategory: "Chained / multi-step",
+    description: "Recommend a partner for a deal, then surface the contacts that partner holds there.",
+    templates: ["Which partner should I bring into the {account} deal, and who do they know there?"],
+    variants: {},
+    useCases: ["PARTNER_RECOMMENDATIONS", "PARTNER_CONTACTS"],
+  },
+  {
+    name: "chain_activity_then_overlap",
+    sourceCategory: "Chained / multi-step",
+    description: "Recent partner deal activity, then cross-reference against your own segments/overlaps.",
+    templates: ["What has {partner} closed recently, and which of those are in my open opps?"],
+    variants: {},
+    useCases: ["ECOSYSTEM_ACTIVITY", "OVERLAPPING_RECORDS"],
+  },
+
   // ---- robustness probes ----
   {
     name: "probe_terse_keyword",
