@@ -180,7 +180,7 @@ const REAL_QUESTIONS = JSON.parse(REAL_QUESTIONS_JSON);
 // (added in bkocin-add-tool-groups, merged to main).
 // These survive the temp_consolidated_tools deprecation.
 
-const SAMPLE_PARTNERS = ["Booking.com", "Chewy Toys for Chewbaccas", "Dark Horse Comics", "Discord", "Dunder Mifflin", "Facebook", "FreshBooks", "Google", "LEGO", "PlayStation", "REI", "Target"];
+const SAMPLE_PARTNERS = ["Booking.com", "Chewy Toys for Chewbaccas", "Dark Horse Comics", "Discord", "Facebook", "FreshBooks", "Google", "LEGO", "PlayStation", "REI", "Target"];
 const SAMPLE_ACCOUNTS = ["Wasp Process Power", "Ripley Media", "Cobra Eclipse Industries", "Trinity Block", "Galactic Asteroid NY", "Alpine Shinra", "Turbo Buy n Large", "Hyper Wolverine", "Kent Ledger", "Viking Wave Alliance", "Master Wolverine Robotics", "Anubis Result Foundation", "Concept Cube Sphere", "Solar Scalar S.A.", "Hydra Cone Dynamics", "Carnotaur Ledger", "Peta Solution Global", "Nuclear Bridge Colony", "Zetta Arasaka", "Sea Token", "Polymer Meteor Syndicate", "Cone Initiative", "Transparent Ronin Link"];
 const SAMPLE_TAGS = ["blue", "chartreuse", "orange", "pink", "puce"];
 
@@ -222,7 +222,6 @@ const INTENTS = [
     templates: ["How many shared customers do we have with {partner}?", "What overlaps do we have with {partner}?"],
     variants: {
       casual:   "do we overlap with {partner} at all",
-      typo:     "find me the population of shared customers with {partner_typo}",
       followup: "and what about {partner}",
       lang_fr:  "Combien d'overlaps ai-je avec {partner} ?",
     },
@@ -236,7 +235,6 @@ const INTENTS = [
     variants: {
       casual: "do our partners work with {account}",
       multi:  "Is {account} a customer of any of our partners?",
-      typo:   "does {partner} have the {account} as a cutomers",
     },
     useCases: ["ACCOUNT_CONTEXT", "OVERLAPPING_PARTNERS"],
   },
@@ -259,7 +257,6 @@ const INTENTS = [
     templates: ["What are the joint customers between {partner_a} and {partner_b}?", "Show me the overlap between {partner_a}, {partner_b}, and {partner_c}."],
     variants: {
       casual: "pull joint customers for {partner_a} and {partner_b}",
-      typo:   "{partner_a} and {partner_typo} customer overlap",
     },
     useCases: ["OVERLAPPING_RECORDS", "PARTNER_POPULATIONS"],
   },
@@ -378,7 +375,6 @@ const INTENTS = [
     templates: ["How is {metric} calculated?", "Why is {account} a top prospect?"],
     variants: {
       casual: "can you dig into attribution",
-      typo:   "wjere can I see the max number of overlaps we have left",
     },
     useCases: ["CROSSBEAM_KNOWLEDGE"],
   },
@@ -521,7 +517,7 @@ const ALL_VARIANT_TYPES = [...new Set(INTENTS.flatMap(i => Object.keys(i.variant
 
 function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
-const LS_PARTNERS = "mcp_test_grid_partners_v2";
+const LS_PARTNERS = "mcp_test_grid_partners_v3";
 const LS_ACCOUNTS = "mcp_test_grid_accounts_v2";
 const LS_TAGS     = "mcp_test_grid_tags";
 
