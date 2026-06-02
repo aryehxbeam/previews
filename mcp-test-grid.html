@@ -383,16 +383,6 @@ const INTENTS = [
     useCases: ["CROSSBEAM_KNOWLEDGE"],
   },
   {
-    name: "followup_clarification",
-    sourceCategory: "Followup Clarification",
-    description: "User contests or corrects the previous response.",
-    templates: ["That doesn't match — your last number was {N_prev} but I'm seeing {N_actual}."],
-    variants: {
-      followup: "that report shows {N_prev} overlaps not {N_actual}",
-    },
-    useCases: ["OVERLAPPING_RECORDS", "CROSSBEAM_KNOWLEDGE"],
-  },
-  {
     name: "missing_from_list",
     sourceCategory: "Missing From Other List / Revenue / Overlap",
     description: "User expected to see X in a list but doesn't — asks why.",
@@ -479,12 +469,10 @@ const INTENTS = [
   {
     name: "probe_ambiguous_name",
     sourceCategory: "cross-cutting",
-    description: "Partner/account name is a substring, fuzzy match, or alternative of a real entity.",
-    templates: ["Does {partner_short} have an open opportunity at {account}?", "Is {account_lc} a customer of any partner?"],
+    description: "Bare one-word name that's a partial / fuzzy match of a real entity. Tests disambiguation on minimal input.",
+    templates: ["{partner_short}"],
     variants: {
-      short_partner: "do {partner_short} customers overlap with us",
-      lowercase:     "is {account_lc} a partner customer",
-      alias:         "they also go by {alt_name} — any partner overlap?",
+      account: "{account_short}",
     },
     useCases: ["PARTNER_CONTEXT", "ACCOUNT_CONTEXT"],
   },
