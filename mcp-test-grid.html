@@ -181,7 +181,7 @@ const REAL_QUESTIONS = JSON.parse(REAL_QUESTIONS_JSON);
 // These survive the temp_consolidated_tools deprecation.
 
 const SAMPLE_PARTNERS = ["Booking.com", "Chewy Toys for Chewbaccas", "Dark Horse Comics", "Discord", "Dunder Mifflin", "Facebook", "FreshBooks", "Google", "LEGO", "PlayStation", "REI", "Target"];
-const SAMPLE_ACCOUNTS = ["Saber Protocol", "Ptero DAO", "Legion Flux Labs", "Transparent Hive Core", "Omega Allosaur", "Cougar Haven Industries", "Terrestrial Oracle Consortium", "Active Oscorp", "Sisko Dynamics", "Open Fossil", "Hub Oracle Net", "K Technologies", "Astro Bay West", "Diamond Spark Smith", "Emerald Process Union", "Void Star Connect", "Transparent Spirit Energy", "Raptor Flash GmbH", "Scarlet Comet Pty", "Momentum Scarab Robotics", "Ivory Polygon International", "Atomic Tiger Scape", "Stellar Wind West", "Green Brain SF", "Express Meteor Power", "Templar Moon Orbital", "Chrome Delos", "Queue Signal Pharma", "Digi Log Colony"];
+const SAMPLE_ACCOUNTS = ["Wasp Process Power", "Ripley Media", "Cobra Eclipse Industries", "Trinity Block", "Galactic Asteroid NY", "Alpine Shinra", "Turbo Buy n Large", "Hyper Wolverine", "Kent Ledger", "Viking Wave Alliance", "Master Wolverine Robotics", "Anubis Result Foundation", "Concept Cube Sphere", "Solar Scalar S.A.", "Hydra Cone Dynamics", "Carnotaur Ledger", "Peta Solution Global", "Nuclear Bridge Colony", "Zetta Arasaka", "Sea Token", "Polymer Meteor Syndicate", "Cone Initiative", "Transparent Ronin Link"];
 const SAMPLE_TAGS = ["blue", "chartreuse", "orange", "pink", "puce"];
 
 // Partner & account fills are mutated at runtime from the sidebar inputs.
@@ -534,7 +534,7 @@ const ALL_VARIANT_TYPES = [...new Set(INTENTS.flatMap(i => Object.keys(i.variant
 function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
 const LS_PARTNERS = "mcp_test_grid_partners_v2";
-const LS_ACCOUNTS = "mcp_test_grid_accounts";
+const LS_ACCOUNTS = "mcp_test_grid_accounts_v2";
 const LS_TAGS     = "mcp_test_grid_tags";
 
 function parseList(raw) {
