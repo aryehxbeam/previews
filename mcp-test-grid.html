@@ -715,13 +715,6 @@ function renderIntent(intent) {
 
       ${variants ? `<div class="section-label">${variantFilterActive ? "matching variants" : "variants"}</div>${variants}` : ""}
 
-      <details>
-        <summary>placeholders &amp; fills (${placeholderKeys.length})</summary>
-        <div style="margin-top:8px">${phRows}</div>
-      </details>
-
-      ${realCapturesBlock}
-
       <div class="section-label" style="margin-top:14px">tools</div>
       <div>${uc}</div>
 
