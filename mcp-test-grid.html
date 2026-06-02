@@ -651,11 +651,15 @@ function intentMatches(intent) {
 }
 
 function renderIntent(intent) {
-  const templates = intent.templates.map(t =>
+  const variantFilterActive = state.variantTypes.size > 0;
+  const templates = variantFilterActive ? "" : intent.templates.map(t =>
     `<div class="template" data-tpl="${escapeHtml(t)}" title="click to roll a filled version">${highlightPlaceholders(t)}</div>`
   ).join("");
 
-  const variants = Object.entries(intent.variants).map(([type, v]) =>
+  const variantEntries = variantFilterActive
+    ? Object.entries(intent.variants).filter(([type]) => state.variantTypes.has(type))
+    : Object.entries(intent.variants);
+  const variants = variantEntries.map(([type, v]) =>
     `<div class="variant-row">
        <span class="chip variant-type small variant-label">${type}</span>
        <div class="template variant" data-tpl="${escapeHtml(v)}" title="click to roll a filled version">${highlightPlaceholders(v)}</div>
@@ -705,10 +709,9 @@ function renderIntent(intent) {
       </div>
       <div class="card-desc">${escapeHtml(intent.description)}</div>
 
-      <div class="section-label">canonical template${intent.templates.length > 1 ? "s" : ""}</div>
-      ${templates}
+      ${templates ? `<div class="section-label">canonical template${intent.templates.length > 1 ? "s" : ""}</div>${templates}` : ""}
 
-      ${variants ? `<div class="section-label">variants</div>${variants}` : ""}
+      ${variants ? `<div class="section-label">${variantFilterActive ? "matching variants" : "variants"}</div>${variants}` : ""}
 
       <details>
         <summary>placeholders &amp; fills (${placeholderKeys.length})</summary>
@@ -727,6 +730,14 @@ function renderIntent(intent) {
       </div>
     </div>
   `;
+}
+
+function activePrompts(intent) {
+  const sel = state.variantTypes;
+  const vs = Object.entries(intent.variants)
+    .filter(([type]) => !sel.size || sel.has(type))
+    .map(([, v]) => v);
+  return sel.size ? vs : [...intent.templates, ...vs];
 }
 
 function render() {
@@ -749,7 +760,7 @@ function bindGridActions() {
       const clickedTpl = e.target.closest(".template");
       const tpl = clickedTpl
         ? clickedTpl.dataset.tpl
-        : pick([...intent.templates, ...Object.values(intent.variants)]);
+        : pick(activePrompts(intent));
       const out = card.querySelector(".gen-out");
       out.textContent = fill(tpl);
     }
@@ -776,7 +787,7 @@ function toast(msg) {
 function rollAll() {
   $$(".card").forEach(card => {
     const intent = INTENTS.find(i => i.name === card.dataset.intent);
-    const tpl = pick([...intent.templates, ...Object.values(intent.variants)]);
+    const tpl = pick(activePrompts(intent));
     card.querySelector(".gen-out").textContent = fill(tpl);
   });
 }
@@ -785,7 +796,7 @@ function copyAll() {
   const lines = [];
   $$(".card").forEach(card => {
     const intent = INTENTS.find(i => i.name === card.dataset.intent);
-    const tpl = pick([...intent.templates, ...Object.values(intent.variants)]);
+    const tpl = pick(activePrompts(intent));
     lines.push(`# ${intent.name}\n${fill(tpl)}`);
   });
   navigator.clipboard.writeText(lines.join("\n\n")).then(() => toast(`copied ${lines.length} questions`));
