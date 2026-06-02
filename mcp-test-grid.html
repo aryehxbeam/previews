@@ -32,7 +32,7 @@
   .chip { padding: 4px 9px; border-radius: 999px; background: var(--pill); color: var(--text); font-size: 12px; cursor: pointer; user-select: none; border: 1px solid transparent; white-space: nowrap; }
   .chip.active { background: var(--accent); color: #0c1322; border-color: var(--accent); font-weight: 600; }
   .chip.small { font-size: 11px; padding: 2px 7px; }
-  .chip.use-case { background: rgba(122,78,199,0.10); color: var(--accent-2); border: 1px solid rgba(122,78,199,0.30); }
+  .chip.use-case { background: rgba(122,78,199,0.10); color: var(--accent-2); border: 1px solid rgba(122,78,199,0.30); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
   .chip.category  { background: rgba(51,97,184,0.08); color: var(--accent);   border: 1px solid rgba(51,97,184,0.28); }
   .chip.variant-type { background: rgba(178,115,23,0.10); color: var(--warn); border: 1px solid rgba(178,115,23,0.30); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
 
@@ -100,7 +100,7 @@
     <span><b id="stat-templates">0</b> templates</span>
     <span><b id="stat-variants">0</b> variants</span>
     <span><b id="stat-real">0</b> real captures (30d, tool-using)</span>
-    <span><b id="stat-usecases">0</b> use-cases</span>
+    <span><b id="stat-usecases">0</b> tools</span>
   </div>
 </header>
 
@@ -142,7 +142,7 @@
       </div>
     </div>
     <div class="filter-section">
-      <h3>Use case <span class="count" id="use-case-count"></span></h3>
+      <h3>Tool <span class="count" id="use-case-count"></span></h3>
       <div class="chip-group" id="use-case-filter"></div>
     </div>
     <div class="filter-section">
@@ -490,7 +490,24 @@ const state = {
   variantTypes: new Set(),
 };
 
-const ALL_USE_CASES = [...new Set(INTENTS.flatMap(i => i.useCases))].sort();
+const TOOL_BY_USE_CASE = {
+  OVERLAPPING_PARTNERS:    "find_overlap_partners",
+  OVERLAPPING_RECORDS:     "find_overlaps",
+  PARTNER_CONTACTS:        "find_partner_contacts",
+  PARTNER_RECOMMENDATIONS: "find_partner_recommendations",
+  ECOSYSTEM_ACTIVITY:      "get_ecosystem_activity",
+  ACCOUNT_CONTEXT:         "get_account_context",
+  PARTNER_CONTEXT:         "get_partner_context",
+  PARTNER_POPULATIONS:     "get_partner_populations",
+  OWN_POPULATIONS:         "get_own_populations",
+  PARTNER_TAGS:            "get_partner_tags",
+  PARTNER_SUGGESTIONS:     "get_partner_suggestions",
+  CROSSBEAM_KNOWLEDGE:     "search_crossbeam_knowledge",
+};
+function toolsFor(intent) {
+  return [...new Set(intent.useCases.map(uc => TOOL_BY_USE_CASE[uc] || uc))];
+}
+const ALL_TOOLS = [...new Set(INTENTS.flatMap(toolsFor))].sort();
 const ALL_CATEGORIES = [...new Set(INTENTS.map(i => i.sourceCategory))].sort();
 const ALL_VARIANT_TYPES = [...new Set(INTENTS.flatMap(i => Object.keys(i.variants)))].sort();
 
@@ -605,8 +622,8 @@ function fill(template) {
 
 function renderFilters() {
   const ucEl = $("#use-case-filter");
-  ucEl.innerHTML = ALL_USE_CASES.map(uc =>
-    `<div class="chip use-case small" data-uc="${uc}">${uc}</div>`
+  ucEl.innerHTML = ALL_TOOLS.map(tool =>
+    `<div class="chip use-case small" data-uc="${tool}">${tool}</div>`
   ).join("");
   ucEl.addEventListener("click", e => {
     const c = e.target.closest(".chip"); if (!c) return;
@@ -615,7 +632,7 @@ function renderFilters() {
     c.classList.toggle("active");
     render();
   });
-  $("#use-case-count").textContent = `(${ALL_USE_CASES.length})`;
+  $("#use-case-count").textContent = `(${ALL_TOOLS.length})`;
 
   const catEl = $("#category-filter");
   catEl.innerHTML = ALL_CATEGORIES.map(cat =>
@@ -644,7 +661,7 @@ function renderFilters() {
 }
 
 function intentMatches(intent) {
-  if (state.useCases.size && !intent.useCases.some(uc => state.useCases.has(uc))) return false;
+  if (state.useCases.size && !toolsFor(intent).some(tool => state.useCases.has(tool))) return false;
   if (state.categories.size && !state.categories.has(intent.sourceCategory)) return false;
   if (state.variantTypes.size && !Object.keys(intent.variants).some(v => state.variantTypes.has(v))) return false;
   return true;
@@ -667,7 +684,7 @@ function renderIntent(intent) {
   ).join("");
 
   const uc = intent.useCases.length
-    ? intent.useCases.map(u => `<span class="chip use-case small">${u}</span>`).join(" ")
+    ? toolsFor(intent).map(u => `<span class="chip use-case small">${u}</span>`).join(" ")
     : `<span class="chip variant-type small">none — should refuse</span>`;
 
   const placeholderKeys = [...new Set(
@@ -720,7 +737,7 @@ function renderIntent(intent) {
 
       ${realCapturesBlock}
 
-      <div class="section-label" style="margin-top:14px">use-cases</div>
+      <div class="section-label" style="margin-top:14px">tools</div>
       <div>${uc}</div>
 
       <div class="gen-row">
@@ -807,7 +824,7 @@ function init() {
   $("#stat-templates").textContent = INTENTS.reduce((n, i) => n + i.templates.length, 0);
   $("#stat-variants").textContent = INTENTS.reduce((n, i) => n + Object.keys(i.variants).length, 0);
   $("#stat-real").textContent = Object.values(REAL_QUESTIONS).reduce((n, arr) => n + arr.length, 0);
-  $("#stat-usecases").textContent = ALL_USE_CASES.length;
+  $("#stat-usecases").textContent = ALL_TOOLS.length;
 
   // Restore partners from localStorage (seed with samples on first visit)
   const partnerInput = $("#partner-input");
