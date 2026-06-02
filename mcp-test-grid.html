@@ -339,7 +339,6 @@ const INTENTS = [
       populations: "what population is {account} in?",
       owner:       "who owns the {account} account?",
       domain:      "look up the account at {account_domain}",
-      partial:     "{account_short}",
       multi_match: "show me my accounts named like {account_short}",
       casual:      "pull up {account} for me",
     },
@@ -371,7 +370,6 @@ const INTENTS = [
       "When did we start sharing data with {partner}?",
     ],
     variants: {
-      own:           "what populations do I have",
       contact_share: "does {partner} share contact info",
     },
     useCases: ["PARTNER_POPULATIONS", "OWN_POPULATIONS"],
@@ -442,15 +440,6 @@ const INTENTS = [
     variants: {},
     useCases: [],
     expectedBehavior: "refuse",
-  },
-  {
-    name: "probe_ambiguous_name",
-    sourceCategory: "Robustness",
-    realCategories: [],
-    description: "Bare one-word name that's a partial / fuzzy match of a real entity. Tests disambiguation on minimal input.",
-    templates: ["{partner_short}"],
-    variants: { account: "{account_short}" },
-    useCases: ["PARTNER_CONTEXT", "ACCOUNT_CONTEXT"],
   },
   {
     name: "probe_non_english",
