@@ -221,7 +221,6 @@ const INTENTS = [
     description: "How many / which accounts overlap with a specific partner.",
     templates: ["How many shared customers do we have with {partner}?", "What overlaps do we have with {partner}?"],
     variants: {
-      terse:    "{partner} overlaps",
       casual:   "do we overlap with {partner} at all",
       typo:     "find me the population of shared customers with {partner_typo}",
       followup: "and what about {partner}",
@@ -235,7 +234,6 @@ const INTENTS = [
     description: "Is a specific named account in a specific partner's population?",
     templates: ["Is {account} a customer of {partner}?", "Does {partner} have an open opportunity with {account}?"],
     variants: {
-      terse:  "{account} {partner}?",
       casual: "do our partners work with {account}",
       multi:  "Is {account} a customer of any of our partners?",
       typo:   "does {partner} have the {account} as a cutomers",
@@ -248,7 +246,6 @@ const INTENTS = [
     description: "Reverse lookup — which partners' populations contain this account?",
     templates: ["Which partners have {account} as a customer?", "Which partners have an overlap with {account}?"],
     variants: {
-      terse:    "partners on {account}",
       casual:   "any partners working with {account}?",
       multi:    "Do any of my partners have {account_a}, {account_b}, or {account_c}?",
       followup: "they also go by {alt_name} — any partner overlap there?",
@@ -261,7 +258,6 @@ const INTENTS = [
     description: "Overlap between two or more named partners (joint customers).",
     templates: ["What are the joint customers between {partner_a} and {partner_b}?", "Show me the overlap between {partner_a}, {partner_b}, and {partner_c}."],
     variants: {
-      terse:  "{partner_a} {partner_b} overlap",
       casual: "pull joint customers for {partner_a} and {partner_b}",
       typo:   "{partner_a} and {partner_typo} customer overlap",
     },
@@ -273,7 +269,6 @@ const INTENTS = [
     description: "Settings, sharing config, populations shared, admins for a specific partner.",
     templates: ["When did we start sharing data with {partner}?", "What populations is {partner} sharing with me?"],
     variants: {
-      terse:    "{partner} admin?",
       casual:   "does {partner} share contact info",
       followup: "what's the partnership angle with {partner}",
     },
@@ -285,7 +280,6 @@ const INTENTS = [
     description: "Enumerate all my partnerships, optionally sorted/filtered.",
     templates: ["List all of my partners.", "Show me my partners tagged {tag}."],
     variants: {
-      terse:    "partner list",
       casual:   "who are my partners",
       filtered: "List all connected partners with the tag {tag} sharing {population}.",
     },
@@ -297,7 +291,6 @@ const INTENTS = [
     description: "Construct a filtered list/report combining multiple constraints (owner, region, partner, population).",
     templates: ["Create a report of {population} owned by {owner} that overlap with {partner}.", "Show me all accounts owned by {owner} at {partner}."],
     variants: {
-      terse:    "{owner} accounts at {partner}",
       casual:   "I want a shared {region} customer list with {partner}",
       filtered: "Strip the list down to just {population} in {region}",
     },
@@ -331,7 +324,6 @@ const INTENTS = [
     description: "High-level rollups of the partner ecosystem.",
     templates: ["How many partners are sharing data with me?", "Summarize my partners in {region}."],
     variants: {
-      terse:    "{industry} ecosystem",
       casual:   "give me the partner ecosystem context",
       followup: "how does this help me with pipeline generation",
     },
@@ -376,7 +368,6 @@ const INTENTS = [
     description: "Revenue/pipeline metrics scoped to one named partner.",
     templates: ["What is the revenue potential with {partner}?"],
     variants: {
-      terse: "what about {partner}",
     },
     useCases: ["PARTNER_CONTEXT", "PARTNER_RECOMMENDATIONS"],
   },
@@ -397,7 +388,6 @@ const INTENTS = [
     description: "User contests or corrects the previous response.",
     templates: ["That doesn't match — your last number was {N_prev} but I'm seeing {N_actual}."],
     variants: {
-      terse:    "that isn't correct",
       followup: "that report shows {N_prev} overlaps not {N_actual}",
     },
     useCases: ["OVERLAPPING_RECORDS", "CROSSBEAM_KNOWLEDGE"],
@@ -408,7 +398,6 @@ const INTENTS = [
     description: "User expected to see X in a list but doesn't — asks why.",
     templates: ["Why isn't {partner} in this list?", "I don't see {partner} customers — why?"],
     variants: {
-      terse:    "{partner}",
       casual:   "are you not including offline partners",
       followup: "still don't see {partner}",
     },
@@ -434,7 +423,6 @@ const INTENTS = [
     description: "Who to engage at an account, via partner-shared contacts (key / primary-role signals).",
     templates: ["Who should I talk to at {account}?", "Who are the contacts at {account} our partners have shared?"],
     variants: {
-      terse:       "contacts at {account}",
       via_partner: "who do I know at {account} through {partner}",
       net_new:     "any contacts at {account} that aren't in my CRM",
       casual:      "who's my warm intro into {account}",
