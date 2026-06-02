@@ -589,8 +589,26 @@ function mangle(name) {
 }
 
 function fill(template) {
+  // Draw distinct values within one prompt so {partner_a}, {partner_b}, ... never collide
+  // (same for the {account_a..c} family). Falls back to repeats only if the pool is exhausted.
+  const partnerPool = [...(PLACEHOLDERS.partner || [])];
+  const accountPool = [...(PLACEHOLDERS.account || [])];
+  const usedPartners = new Set();
+  const usedAccounts = new Set();
+  const drawDistinct = (pool, used) => {
+    const avail = pool.filter(x => !used.has(x));
+    const choice = pick(avail.length ? avail : pool);
+    used.add(choice);
+    return choice;
+  };
   return template.replace(/\{([a-z_]+)\}/g, (_, key) => {
-    // Direct hit
+    // Partner family: distinct draws from the partner pool
+    if (key === "partner" || /^partner_[a-d]$/.test(key)) return String(drawDistinct(partnerPool, usedPartners));
+
+    // Account family: distinct draws from the account pool
+    if (key === "account" || /^account_[a-c]$/.test(key)) return String(drawDistinct(accountPool, usedAccounts));
+
+    // Direct hit (tag, region, owner, industry, metric, N, days, ...)
     if (PLACEHOLDERS[key]) return String(pick(PLACEHOLDERS[key]));
 
     // Derived account forms: account_lc, account_short, account_domain, account_typo
