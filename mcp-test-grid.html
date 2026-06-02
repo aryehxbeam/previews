@@ -670,7 +670,7 @@ function intentMatches(intent) {
 function renderIntent(intent) {
   const variantFilterActive = state.variantTypes.size > 0;
   const templates = variantFilterActive ? "" : intent.templates.map(t =>
-    `<div class="template" data-tpl="${escapeHtml(t)}" title="click to roll a filled version">${highlightPlaceholders(t)}</div>`
+    `<div class="template" data-tpl="${escapeHtml(t)}" title="click to roll & copy">${highlightPlaceholders(t)}</div>`
   ).join("");
 
   const variantEntries = variantFilterActive
@@ -679,7 +679,7 @@ function renderIntent(intent) {
   const variants = variantEntries.map(([type, v]) =>
     `<div class="variant-row">
        <span class="chip variant-type small variant-label">${type}</span>
-       <div class="template variant" data-tpl="${escapeHtml(v)}" title="click to roll a filled version">${highlightPlaceholders(v)}</div>
+       <div class="template variant" data-tpl="${escapeHtml(v)}" title="click to roll & copy">${highlightPlaceholders(v)}</div>
      </div>`
   ).join("");
 
@@ -779,7 +779,9 @@ function bindGridActions() {
         ? clickedTpl.dataset.tpl
         : pick(activePrompts(intent));
       const out = card.querySelector(".gen-out");
-      out.textContent = fill(tpl);
+      const text = fill(tpl);
+      out.textContent = text;
+      navigator.clipboard.writeText(text).then(() => toast("copied")).catch(() => {});
     }
 
     if (e.target.closest(".copy-btn")) {
