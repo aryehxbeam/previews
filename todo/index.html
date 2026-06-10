@@ -6,6 +6,7 @@
 <title>Todo List</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
 <style>
   :root {
     --bg: #0f1115;
@@ -155,6 +156,27 @@
     line-height: 1.55;
     padding: 16px;
   }
+  .diagram {
+    margin-top: 40px;
+    border-top: 1px solid var(--border);
+    padding-top: 24px;
+  }
+  .diagram h2 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--muted);
+    margin: 0 0 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .diagram .mermaid {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    text-align: center;
+    overflow: auto;
+  }
 </style>
 </head>
 <body>
@@ -196,6 +218,28 @@ function load() {
 function save() {
   localStorage.setItem(KEY, JSON.stringify(todos));
 }</code></pre>
+  </section>
+
+  <section class="diagram">
+    <h2>State flow</h2>
+    <pre class="mermaid">
+flowchart TD
+    A([Page load]) --> B[load from localStorage]
+    B --> C{any saved todos?}
+    C -->|yes| D[render list]
+    C -->|no| E[show empty state]
+    D --> F[user action]
+    E --> F
+    F -->|add| G[push new todo]
+    F -->|toggle| H[flip done flag]
+    F -->|delete| I[remove todo]
+    F -->|clear done| J[drop completed]
+    G --> K[(save to localStorage)]
+    H --> K
+    I --> K
+    J --> K
+    K --> D
+    </pre>
   </section>
 </div>
 
@@ -291,6 +335,8 @@ function save() {
   render();
 
   hljs.highlightAll();
+
+  mermaid.initialize({ startOnLoad: true, theme: "dark", securityLevel: "loose" });
 </script>
 </body>
 </html>
