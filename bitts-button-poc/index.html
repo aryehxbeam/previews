@@ -1,0 +1,471 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bitts Button - HTML + Tailwind POC</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    // Crossbeam / Bitts design tokens, resolved from the repo
+    // (base-tailwind-colors.json + tailwind-theme-builder.ts).
+    // Spacing/radius tokens in this repo are PIXEL values (gap-8 = 8px),
+    // so the scales are overridden to match.
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            white: "#ffffff",
+            "neutral-50": "#F1F5F9",
+            "neutral-100": "#E7EDF5",
+            "neutral-200": "#DDE5F0",
+            "neutral-300": "#C6D1E1",
+            "neutral-400": "#8C9FB8",
+            "neutral-600": "#435469",
+            "neutral-900": "#0D192A",
+            "neutral-background-strong": "#0D192A",
+          },
+          spacing: {
+            0: "0px", 2: "2px", 4: "4px", 6: "6px", 8: "8px", 10: "10px",
+            12: "12px", 16: "16px", 24: "24px", 32: "32px", 40: "40px", 48: "48px",
+          },
+          borderRadius: { 4: "4px", 6: "6px", 8: "8px", 12: "12px" },
+        },
+      },
+    };
+  </script>
+  <style>
+    /* =======================================================================
+       Bitts design tokens (single source of truth, mirrors the repo's token
+       layer). No brand hex appears in markup or component rules below - only
+       these var() references.
+       ===================================================================== */
+    :root {
+      --white: #ffffff;
+      --black: #000000;
+      --brand-blue: #3B3FB6;
+      --brand-navy: #042C59;
+      --violet-700: #4A1468;
+      --neutral-background-weak: #F1F5F9;
+      --neutral-background-disabled: #DDE5F0;
+      --neutral-background-strong: #0D192A;
+      --neutral-accent: #8C9FB8;
+      --neutral-border-focus: #477BBA;
+      --neutral-text-button: #435469;
+      --danger-background-medium: #E01939;
+      --danger-text: #9B0E25;
+      --danger-text-button: #9B0E25;
+      --upsell-background-medium: #8C3DB8;
+      --primary-accent: #2C61A3;
+      --primary-text-button: #002047;
+      --secondary-background-weak: #DDDEFF;
+      --secondary-text: #1C2082;
+    }
+
+    body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+    /* =======================================================================
+       Bitts Button - static reproduction of packages/bitts/src/BittsButton.
+       The Vue component wraps <a-button> and styles it with a scoped block of
+       @apply + theme() rules. Those rules are reproduced 1:1 here as plain CSS:
+       spacing/radius are the repo's pixel tokens, colors come from the var()
+       token layer above, and Tailwind's `bg-white/16 bg-blend-overlay` overlay
+       trick is reproduced with background-color + background-blend-mode.
+       ===================================================================== */
+
+    /* ---- Base ---------------------------------------------------------- */
+    .c-bitts-btn {
+      position: relative;
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 16px;
+      line-height: 24px;
+      cursor: pointer;
+      border: none;
+      box-shadow: none;
+      outline: none;
+      font-family: inherit;
+      color: inherit;
+      background-color: transparent;
+    }
+    .c-bitts-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .c-bitts-btn__text { font-weight: 700; display: flex; align-items: center; }
+    .c-bitts-btn-icon { display: inline-flex; align-items: center; justify-content: center; }
+    .c-bitts-btn-icon,
+    .c-bitts-btn__text,
+    .c-bitts-btn__content { position: relative; z-index: 1; }
+
+    /* ---- Sizes --------------------------------------------------------- */
+    .c-bitts-btn-large  { padding: 12px 24px; border-radius: 12px; height: auto; font-size: 16px; }
+    .c-bitts-btn-medium { padding: 8px 16px;  border-radius: 8px;  height: auto; font-size: 16px; }
+    .c-bitts-btn-small  { padding: 4px 12px;  border-radius: 6px;  height: auto; font-size: 14px; line-height: 24px; }
+    .c-bitts-btn-xs     { padding: 0 8px;     border-radius: 4px;  height: auto; font-size: 14px; line-height: 24px; }
+    .c-bitts-btn-large  .c-bitts-btn__text,
+    .c-bitts-btn-medium .c-bitts-btn__text { margin-bottom: -2px; }
+
+    /* ---- Icon-only sizes ---------------------------------------------- */
+    .c-bitts-btn-large--icon  { width: 48px; height: 48px; border-radius: 12px; padding: 0; }
+    .c-bitts-btn-medium--icon { width: 40px; height: 40px; border-radius: 8px;  padding: 0; }
+    .c-bitts-btn-small--icon  { width: 32px; height: 32px; border-radius: 6px;  padding: 0; }
+    .c-bitts-btn-xs--icon     { width: 24px; height: 24px; border-radius: 4px;  padding: 0; }
+
+    /* ---- Icon spacing / sizing ---------------------------------------- */
+    .c-bitts-btn-medium .c-bitts-btn__left-icon,
+    .c-bitts-btn-large  .c-bitts-btn__left-icon  { padding-right: 8px; height: 100%; }
+    .c-bitts-btn-medium .c-bitts-btn__right-icon,
+    .c-bitts-btn-large  .c-bitts-btn__right-icon { padding-left: 6px; }
+    .c-bitts-btn-small  .c-bitts-btn__left-icon,
+    .c-bitts-btn-xs     .c-bitts-btn__left-icon  { padding-right: 4px; height: 100%; }
+    .c-bitts-btn-small  .c-bitts-btn__right-icon,
+    .c-bitts-btn-xs     .c-bitts-btn__right-icon { padding-left: 4px; height: 100%; }
+    .c-bitts-btn__left-icon svg,
+    .c-bitts-btn__right-icon svg { width: 12px; height: 12px; display: block; }
+    .c-bitts-btn-small .c-bitts-btn__left-icon svg,
+    .c-bitts-btn-small .c-bitts-btn__right-icon svg,
+    .c-bitts-btn-xs .c-bitts-btn__left-icon svg,
+    .c-bitts-btn-xs .c-bitts-btn__right-icon svg { width: 10px; height: 10px; }
+    .c-bitts-btn__center-icon svg { width: 16px; height: 16px; display: block; }
+    .c-bitts-btn-small .c-bitts-btn__center-icon svg,
+    .c-bitts-btn-xs    .c-bitts-btn__center-icon svg { width: 12px; height: 12px; }
+
+    /* ---- extra-background (hover/press gradient layer) ---------------- */
+    .extra-background { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; z-index: 0; }
+    .extra-background--large   { border-radius: 12px; }
+    .extra-background--medium  { border-radius: 8px; }
+    .extra-background--small   { border-radius: 6px; }
+    .extra-background--x-small { border-radius: 4px; }
+    .c-bitts-btn--ghost { background-color: transparent; }
+
+    /* ===================================================================
+       PRIMARY
+       =================================================================== */
+    .c-bitts-btn-primary:not(.active) .extra-background {
+      background-image: radial-gradient(125% 125% at 50.13% 100%, var(--brand-blue) 2.08%, var(--brand-navy) 90.11%);
+    }
+    .c-bitts-btn-primary.c-bitts-btn--fill:not(.active) {
+      color: var(--white);
+      background-image: radial-gradient(125% 125% at 50.13% 100%, var(--brand-blue) 2.08%, var(--brand-navy) 80.11%);
+      background-blend-mode: overlay;
+    }
+    .c-bitts-btn-primary.c-bitts-btn--fill:not(.active):hover:not([disabled])  { background-color: color-mix(in srgb, var(--white) 16%, transparent); }
+    .c-bitts-btn-primary.c-bitts-btn--fill:not(.active):active:not([disabled]) { background-color: color-mix(in srgb, var(--black) 32%, transparent); }
+    .c-bitts-btn-primary.c-bitts-btn--outline:not(.active):hover:not([disabled]) .extra-background,
+    .c-bitts-btn-primary.c-bitts-btn--ghost:not(.active):hover:not([disabled]) .extra-background   { opacity: 0.1; }
+    .c-bitts-btn-primary.c-bitts-btn--outline:not(.active):active:not([disabled]) .extra-background,
+    .c-bitts-btn-primary.c-bitts-btn--ghost:not(.active):active:not([disabled]) .extra-background  { opacity: 0.2; }
+    .c-bitts-btn-primary.c-bitts-btn--outline:not(.active) .c-bitts-btn-icon,
+    .c-bitts-btn-primary.c-bitts-btn--ghost:not(.active) .c-bitts-btn-icon { color: var(--primary-accent); }
+    .c-bitts-btn-primary.c-bitts-btn--outline:not(.active) .c-bitts-btn__text,
+    .c-bitts-btn-primary.c-bitts-btn--ghost:not(.active) .c-bitts-btn__text {
+      background-image: radial-gradient(125% 125% at 50.13% 100%, var(--brand-blue) 2.08%, var(--brand-navy) 80.11%);
+      -webkit-text-fill-color: transparent;
+      -webkit-background-clip: text;
+      background-clip: text;
+    }
+    .c-bitts-btn-primary.c-bitts-btn--outline:not(.active):disabled,
+    .c-bitts-btn-primary.c-bitts-btn--ghost:not(.active):disabled { background-image: none; background-color: transparent; }
+
+    /* ===================================================================
+       NEUTRAL
+       =================================================================== */
+    .c-bitts-btn-neutral:not(.active) { color: var(--neutral-text-button); }
+    .c-bitts-btn-neutral:not(.active) .extra-background {
+      background-image: radial-gradient(125% 125% at 50.13% 100%, var(--neutral-background-weak) 2.08%, var(--neutral-background-disabled) 90.11%);
+    }
+    .c-bitts-btn-neutral.c-bitts-btn--fill:not(.active) {
+      background-image: radial-gradient(125% 125% at 50.13% 100%, var(--neutral-background-weak) 2.08%, var(--neutral-background-disabled) 80.11%);
+      background-blend-mode: overlay;
+    }
+    .c-bitts-btn-neutral.c-bitts-btn--fill:not(.active):hover:not([disabled])  { background-color: color-mix(in srgb, var(--white) 32%, transparent); }
+    .c-bitts-btn-neutral.c-bitts-btn--fill:not(.active):active:not([disabled]) { background-color: color-mix(in srgb, var(--black) 8%, transparent); }
+    .c-bitts-btn-neutral.c-bitts-btn--outline:not(.active) .extra-background { border: 1px solid var(--neutral-accent); }
+    .c-bitts-btn-neutral.c-bitts-btn--outline:not(.active):hover:not([disabled]) .extra-background,
+    .c-bitts-btn-neutral.c-bitts-btn--ghost:not(.active):hover:not([disabled]) .extra-background   { opacity: 0.3; }
+    .c-bitts-btn-neutral.c-bitts-btn--outline:not(.active):active:not([disabled]) .extra-background,
+    .c-bitts-btn-neutral.c-bitts-btn--ghost:not(.active):active:not([disabled]) .extra-background  { opacity: 0.6; }
+    .c-bitts-btn-neutral:not(.active) .c-bitts-btn-icon { color: var(--neutral-text-button); }
+
+    /* ===================================================================
+       DANGER
+       =================================================================== */
+    .c-bitts-btn-danger:not(.active) .extra-background {
+      background-image: radial-gradient(125% 125% at 50.13% 100%, var(--danger-background-medium) 2.08%, var(--danger-text) 90.11%);
+    }
+    .c-bitts-btn-danger.c-bitts-btn--fill:not(.active) {
+      color: var(--white);
+      background-image: radial-gradient(125% 125% at 50.13% 100%, var(--danger-background-medium) 2.08%, var(--danger-text) 80.11%);
+      background-blend-mode: overlay;
+    }
+    .c-bitts-btn-danger.c-bitts-btn--fill:not(.active):hover:not([disabled])  { background-color: color-mix(in srgb, var(--white) 8%, transparent); }
+    .c-bitts-btn-danger.c-bitts-btn--fill:not(.active):active:not([disabled]) { background-color: color-mix(in srgb, var(--black) 16%, transparent); }
+    .c-bitts-btn-danger.c-bitts-btn--outline:not(.active) .extra-background,
+    .c-bitts-btn-danger.c-bitts-btn--ghost:not(.active) .extra-background { border: 1px solid var(--neutral-accent); }
+    .c-bitts-btn-danger.c-bitts-btn--outline:not(.active):hover:not([disabled]) .extra-background,
+    .c-bitts-btn-danger.c-bitts-btn--ghost:not(.active):hover:not([disabled]) .extra-background   { opacity: 0.1; }
+    .c-bitts-btn-danger.c-bitts-btn--outline:not(.active):active:not([disabled]) .extra-background,
+    .c-bitts-btn-danger.c-bitts-btn--ghost:not(.active):active:not([disabled]) .extra-background  { opacity: 0.2; }
+    .c-bitts-btn-danger.c-bitts-btn--outline:not(.active) .c-bitts-btn-icon,
+    .c-bitts-btn-danger.c-bitts-btn--ghost:not(.active) .c-bitts-btn-icon { color: var(--danger-text-button); }
+    .c-bitts-btn-danger.c-bitts-btn--outline:not(.active) .c-bitts-btn__text,
+    .c-bitts-btn-danger.c-bitts-btn--ghost:not(.active) .c-bitts-btn__text {
+      background-image: radial-gradient(125% 125% at 50.13% 100%, var(--danger-background-medium) 2.08%, var(--danger-text) 80.11%);
+      -webkit-text-fill-color: transparent;
+      -webkit-background-clip: text;
+      background-clip: text;
+    }
+    .c-bitts-btn-danger.c-bitts-btn--outline:not(.active):disabled,
+    .c-bitts-btn-danger.c-bitts-btn--ghost:not(.active):disabled { background-image: none; background-color: transparent; }
+
+    /* ===================================================================
+       WHITE (rendered on a dark surface)
+       =================================================================== */
+    .c-bitts-btn-white:not(.active) { color: var(--white); }
+    .c-bitts-btn-white.c-bitts-btn--fill:not(.active) {
+      background-image: radial-gradient(125% 125% at 50.13% 100%,
+        color-mix(in srgb, var(--white) 12.5%, transparent) 2.08%,
+        color-mix(in srgb, var(--white) 37.6%, transparent) 80.11%);
+      background-blend-mode: overlay;
+    }
+    .c-bitts-btn-white.c-bitts-btn--fill:not(.active):hover:not([disabled])  { background-color: color-mix(in srgb, var(--white) 8%, transparent); }
+    .c-bitts-btn-white.c-bitts-btn--fill:not(.active):active:not([disabled]) { background-color: color-mix(in srgb, var(--black) 16%, transparent); }
+    .c-bitts-btn-white.c-bitts-btn--outline:not(.active),
+    .c-bitts-btn-white.c-bitts-btn--ghost:not(.active) { background-image: none; }
+    .c-bitts-btn-white.c-bitts-btn--outline:not(.active):hover:not([disabled]),
+    .c-bitts-btn-white.c-bitts-btn--ghost:not(.active):hover:not([disabled]) {
+      background-image: radial-gradient(125% 125% at 50.13% 100%,
+        color-mix(in srgb, var(--white) 12.5%, transparent) 2.08%,
+        color-mix(in srgb, var(--white) 37.6%, transparent) 80.11%);
+    }
+    .c-bitts-btn-white--outline:not(.active):not(:focus-visible) { box-shadow: var(--white) inset 0px 0px 0px 1px; }
+
+    /* ===================================================================
+       UPSELL (violet; ignores variant except outline)
+       =================================================================== */
+    .c-bitts-btn-upsell--ghost,
+    .c-bitts-btn-upsell:not(.c-bitts-btn-upsell--outline) {
+      color: var(--white); border: none;
+      background-image: radial-gradient(125% 125% at 50.13% 100%, var(--upsell-background-medium) 2.08%, var(--violet-700) 90.11%);
+      background-blend-mode: overlay;
+    }
+    .c-bitts-btn-upsell:not(.c-bitts-btn-upsell--outline):not([disabled]):hover,
+    .c-bitts-btn-upsell:not(.c-bitts-btn-upsell--outline):not([disabled]):focus-visible { background-color: color-mix(in srgb, var(--white) 10%, transparent); }
+    .c-bitts-btn-upsell:not(.c-bitts-btn-upsell--outline):not([disabled]):active { background-color: color-mix(in srgb, var(--black) 30%, transparent); }
+    .c-bitts-btn-upsell--outline,
+    .c-bitts-btn-upsell--outline:not([disabled]):hover { color: var(--secondary-text); background-color: var(--secondary-background-weak); }
+
+    /* ===================================================================
+       OUTLINE border (primary / danger / neutral; non-focus, non-active)
+       =================================================================== */
+    .c-bitts-btn-primary--outline:not(:focus-visible):not(.active),
+    .c-bitts-btn-danger--outline:not(:focus-visible):not(.active),
+    .c-bitts-btn-neutral--outline:not(:focus-visible):not(.active) {
+      color: var(--neutral-text-button);
+      border: none;
+      box-shadow: var(--neutral-accent) inset 0px 0px 0px 1px;
+    }
+
+    /* ===================================================================
+       ACTIVE (overrides type colors -> secondary)
+       =================================================================== */
+    .c-bitts-btn.active.c-bitts-btn--outline,
+    .c-bitts-btn.active.c-bitts-btn--fill {
+      color: var(--secondary-text) !important;
+      background-image: none !important;
+      background-color: var(--secondary-background-weak) !important;
+    }
+    .c-bitts-btn.active.c-bitts-btn--outline { outline: 1px solid var(--neutral-accent) !important; }
+    .c-bitts-btn.active.c-bitts-btn--ghost { color: var(--secondary-text) !important; }
+    .c-bitts-btn.active .c-bitts-btn__text {
+      background-image: none;
+      -webkit-text-fill-color: var(--secondary-text);
+    }
+    .c-bitts-btn.active .c-bitts-btn-icon { color: var(--secondary-text); }
+    .c-bitts-btn.active .extra-background { display: none; }
+
+    /* ===================================================================
+       FOCUS rings (custom inset outlines)
+       =================================================================== */
+    .c-bitts-btn-large.blue-outline-on-focus:not([disabled]):focus-visible,
+    .c-bitts-btn-medium.blue-outline-on-focus:not([disabled]):focus-visible {
+      box-shadow: inset 0px 0px 0px 2px var(--neutral-border-focus), inset 0px 0px 0px 4px var(--white);
+    }
+    .c-bitts-btn-small.blue-outline-on-focus:not([disabled]):focus-visible,
+    .c-bitts-btn-xs.blue-outline-on-focus:not([disabled]):focus-visible {
+      box-shadow: inset 0px 0px 0px 2px var(--neutral-border-focus), inset 0px 0px 0px 3px var(--white);
+    }
+    .c-bitts-btn-large.white-outline-on-focus:not([disabled]):focus-visible,
+    .c-bitts-btn-medium.white-outline-on-focus:not([disabled]):focus-visible {
+      box-shadow: inset 0px 0px 0px 2px var(--white), inset 0px 0px 0px 4px var(--white);
+    }
+    .c-bitts-btn-small.white-outline-on-focus:not([disabled]):focus-visible,
+    .c-bitts-btn-xs.white-outline-on-focus:not([disabled]):focus-visible {
+      box-shadow: inset 0px 0px 0px 2px var(--white), inset 0px 0px 0px 3px var(--white);
+    }
+
+    /* ===================================================================
+       LOADING spinner (component defers to <a-button>; reproduced)
+       =================================================================== */
+    .c-bitts-btn.is-loading .c-bitts-btn__content { opacity: 0; }
+    .c-bitts-btn__spinner { display: none; }
+    .c-bitts-btn.is-loading .c-bitts-btn__spinner {
+      display: block; position: absolute; width: 14px; height: 14px;
+      border: 2px solid var(--white); border-top-color: transparent;
+      border-radius: 9999px; animation: bittsSpin 1s linear infinite;
+    }
+    .c-bitts-btn-neutral.is-loading .c-bitts-btn__spinner { border-color: var(--neutral-text-button); border-top-color: transparent; }
+    .c-bitts-btn-danger--outline.is-loading .c-bitts-btn__spinner,
+    .c-bitts-btn-danger--ghost.is-loading .c-bitts-btn__spinner { border-color: var(--danger-text-button); border-top-color: transparent; }
+    .c-bitts-btn-primary--outline.is-loading .c-bitts-btn__spinner,
+    .c-bitts-btn-primary--ghost.is-loading .c-bitts-btn__spinner { border-color: var(--primary-text-button); border-top-color: transparent; }
+    @keyframes bittsSpin { 100% { transform: rotate(360deg); } }
+  </style>
+</head>
+<body class="bg-neutral-50 text-neutral-900">
+  <div class="mx-auto max-w-[1180px] px-24 py-32">
+    <header class="mb-32">
+      <p class="text-sm font-semibold uppercase tracking-wide text-neutral-600">Crossbeam / Bitts &middot; HTML + Tailwind POC</p>
+      <h1 class="mt-8 text-[32px] font-bold leading-[1.15] text-neutral-900">BittsButton</h1>
+      <p class="mt-12 max-w-[760px] leading-6 text-neutral-600">
+        A static HTML + Tailwind reproduction of the real
+        <code class="rounded-4 bg-neutral-100 px-4 py-2 text-[13px]">packages/bitts/src/BittsButton</code>
+        component. Two independent axes: <strong>type</strong> (color family) and <strong>variant</strong> (fill style),
+        plus <strong>size</strong>, and states. The backing CSS is the component's own scoped rules, driven by the
+        repo's design tokens - no brand hex in the markup. Hover, press, and keyboard-focus (Tab) states are
+        <strong>live</strong> - interact with any button below.
+      </p>
+    </header>
+
+    <section class="mb-32 grid grid-cols-1 gap-16 sm:grid-cols-3">
+      <div class="rounded-8 border border-neutral-200 bg-white p-16">
+        <h3 class="text-sm font-bold uppercase tracking-wide text-neutral-600">type</h3>
+        <p class="mt-8 text-sm leading-6 text-neutral-600"><code>primary</code>, <code>neutral</code>, <code>danger</code>, <code>white</code>, <code>upsell</code></p>
+      </div>
+      <div class="rounded-8 border border-neutral-200 bg-white p-16">
+        <h3 class="text-sm font-bold uppercase tracking-wide text-neutral-600">variant</h3>
+        <p class="mt-8 text-sm leading-6 text-neutral-600"><code>fill</code>, <code>outline</code>, <code>ghost</code></p>
+      </div>
+      <div class="rounded-8 border border-neutral-200 bg-white p-16">
+        <h3 class="text-sm font-bold uppercase tracking-wide text-neutral-600">size</h3>
+        <p class="mt-8 text-sm leading-6 text-neutral-600"><code>large</code>, <code>medium</code>, <code>small</code>, <code>x-small</code></p>
+      </div>
+    </section>
+
+    <main id="catalog" class="flex flex-col gap-32"></main>
+
+    <footer class="mt-40 border-t border-neutral-200 pt-16 text-sm text-neutral-600">
+      Generated from Figma (Bitts - Atoms - Molecules, node 647:0) reconciled against the component source.
+    </footer>
+  </div>
+
+  <script>
+    const ICONS = {
+      plus: '<svg viewBox="0 0 448 512" fill="currentColor"><path d="M256 80c0-17.7-14.3-32-32-32s-32 14.3-32 32V224H48c-17.7 0-32 14.3-32 32s14.3 32 32 32H192V432c0 17.7 14.3 32 32 32s32-14.3 32-32V288H400c17.7 0 32-14.3 32-32s-14.3-32-32-32H256V80z"/></svg>',
+      arrow: '<svg viewBox="0 0 448 512" fill="currentColor"><path d="M438.6 278.6c12.5-12.5 12.5-32.8 0-45.3l-160-160c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L338.8 224 32 224c-17.7 0-32 14.3-32 32s14.3 32 32 32l306.7 0L233.4 393.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0l160-160z"/></svg>',
+    };
+
+    const SIZE_CLASS = { "x-small": "c-bitts-btn-xs", small: "c-bitts-btn-small", medium: "c-bitts-btn-medium", large: "c-bitts-btn-large" };
+    const TYPE_CLASS = { upsell: "c-bitts-btn-upsell", primary: "c-bitts-btn-primary", neutral: "c-bitts-btn-neutral", danger: "c-bitts-btn-danger", white: "c-bitts-btn-white" };
+
+    const TYPES = ["primary", "neutral", "danger", "white", "upsell"];
+    const SIZES = ["large", "medium", "small", "x-small"];
+
+    // upsell only meaningfully differs fill vs outline
+    function variantsFor(type) {
+      return type === "upsell" ? ["fill", "outline"] : ["fill", "outline", "ghost"];
+    }
+
+    // Reproduces the component's btnClass computed (order preserved).
+    function btnClasses({ type, variant, size, active = false, iconOnly = false }) {
+      const baseType = TYPE_CLASS[type];
+      const outlineType = type === "white" ? "white-outline-on-focus" : "blue-outline-on-focus";
+      const cls = ["c-bitts-btn"];
+      if (iconOnly) cls.push("c-bitts-btn-icon");
+      cls.push(SIZE_CLASS[size]);
+      if (iconOnly) cls.push(SIZE_CLASS[size] + "--icon");
+      cls.push(`${baseType}--${variant}`);
+      cls.push(baseType);
+      cls.push(outlineType);
+      if (active) cls.push("active");
+      cls.push(`c-bitts-btn--${variant}`);
+      return cls.filter(Boolean).join(" ");
+    }
+
+    function buttonHTML({ type, variant, size, state = "default", label = "Button", leftIcon = false, rightIcon = false, iconOnly = false }) {
+      const classes = btnClasses({ type, variant, size, active: state === "active", iconOnly });
+      const attrs = state === "disabled" ? " disabled" : "";
+      const loading = state === "loading" ? " is-loading" : "";
+      const hasLayer = variant === "outline" || variant === "ghost";
+      const layer = hasLayer ? `<span class="extra-background extra-background--${size}"></span>` : "";
+      let inner = "";
+      if (leftIcon) inner += `<span class="c-bitts-btn-icon c-bitts-btn__left-icon">${ICONS.plus}</span>`;
+      if (iconOnly) inner += `<span class="c-bitts-btn-icon c-bitts-btn__center-icon">${ICONS.plus}</span>`;
+      else inner += `<span class="c-bitts-btn__text">${label}</span>`;
+      if (rightIcon) inner += `<span class="c-bitts-btn-icon c-bitts-btn__right-icon">${ICONS.arrow}</span>`;
+      return `<button class="${classes}${loading}"${attrs}>${layer}<span class="c-bitts-btn__content flex items-center whitespace-nowrap">${inner}</span><span class="c-bitts-btn__spinner"></span></button>`;
+    }
+
+    function cell(label, html) {
+      return `<div class="flex flex-col items-center gap-8">
+        <div class="flex min-h-[56px] items-center">${html}</div>
+        <span class="text-[11px] font-medium text-neutral-600">${label}</span>
+      </div>`;
+    }
+
+    function variantBlock(type, variant, onDark) {
+      const sizes = SIZES.map((size) => cell(size, buttonHTML({ type, variant, size, leftIcon: true }))).join("");
+      const states = [
+        cell("default", buttonHTML({ type, variant, size: "medium" })),
+        cell("disabled", buttonHTML({ type, variant, size: "medium", state: "disabled" })),
+        cell("loading", buttonHTML({ type, variant, size: "medium", state: "loading" })),
+        cell("active", buttonHTML({ type, variant, size: "medium", state: "active" })),
+        cell("right icon", buttonHTML({ type, variant, size: "medium", rightIcon: true })),
+      ].join("");
+      const iconOnly = SIZES.map((size) => cell(size, buttonHTML({ type, variant, size, iconOnly: true }))).join("");
+      const sample = btnClasses({ type, variant, size: "medium" });
+      const labelColor = onDark ? "text-white/70" : "text-neutral-600";
+      const dividerColor = onDark ? "border-white/15" : "border-neutral-200";
+      const codeBg = onDark ? "bg-white/10 text-white/90" : "bg-neutral-100 text-neutral-700";
+      return `
+        <div class="flex flex-col gap-16 border-t ${dividerColor} pt-16 first:border-t-0 first:pt-0">
+          <h4 class="text-base font-bold ${onDark ? "text-white" : "text-neutral-900"}">variant: ${variant}</h4>
+          <div class="flex flex-col gap-16 xl:flex-row xl:flex-wrap xl:gap-32">
+            <div>
+              <p class="mb-8 text-[11px] font-semibold uppercase tracking-wide ${labelColor}">sizes (with left icon)</p>
+              <div class="flex flex-wrap items-end gap-16">${sizes}</div>
+            </div>
+            <div>
+              <p class="mb-8 text-[11px] font-semibold uppercase tracking-wide ${labelColor}">states (medium)</p>
+              <div class="flex flex-wrap items-end gap-16">${states}</div>
+            </div>
+            <div>
+              <p class="mb-8 text-[11px] font-semibold uppercase tracking-wide ${labelColor}">icon-only</p>
+              <div class="flex flex-wrap items-end gap-16">${iconOnly}</div>
+            </div>
+          </div>
+          <code class="block overflow-x-auto rounded-6 ${codeBg} px-8 py-4 text-[12px] leading-6">${sample}</code>
+        </div>`;
+    }
+
+    function typeSection(type) {
+      const onDark = type === "white";
+      const surface = onDark ? "bg-neutral-background-strong" : "bg-white";
+      const titleColor = onDark ? "text-white" : "text-neutral-900";
+      const subColor = onDark ? "text-white/70" : "text-neutral-600";
+      const border = onDark ? "border-neutral-900" : "border-neutral-200";
+      const blocks = variantsFor(type).map((v) => variantBlock(type, v, onDark)).join("");
+      const note = onDark ? "shown on a dark surface" : (type === "upsell" ? "violet; variant only toggles fill vs outline" : "");
+      return `
+        <section class="rounded-12 border ${border} ${surface} p-24">
+          <div class="mb-16 flex flex-wrap items-baseline gap-12">
+            <h2 class="text-[22px] font-bold ${titleColor}">type: ${type}</h2>
+            <span class="text-sm ${subColor}">${note}</span>
+          </div>
+          <div class="flex flex-col gap-24">${blocks}</div>
+        </section>`;
+    }
+
+    document.getElementById("catalog").innerHTML = TYPES.map(typeSection).join("");
+  </script>
+</body>
+</html>
