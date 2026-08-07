@@ -22,7 +22,45 @@ which records what each prompt *should* trigger and the results of running them.
   identifiers (survive tool renames), so it stays valid as tools are renamed or
   consolidated.
 - The "real captures" expandable on each card shows the raw questions that
-  seeded that intent (these still reference the older staging tool names).
+  seeded that intent. That list is a frozen 30-day snapshot from before tool
+  consolidation, so its tool pills name tools that no longer exist. Read them as
+  history, not as expected routes.
+
+## Scope: post-consolidation tool surface
+
+Every intent maps to a tool that is registered today. `TOOL_BY_USE_CASE` in the
+HTML mirrors the `crossbeam_tool(...)` declarations in `crossbeam_mcp/tools/`,
+plus `crossbeam_session/tools.py` and `crossbeam_app/tools.py` - 12 tools, 10
+generally available and 2 behind feature flags:
+
+| Tool | Flag |
+|---|---|
+| `get_account_context` | - |
+| `find_overlap_partners` | - |
+| `find_overlaps` | - |
+| `find_partner_contacts` | - |
+| `find_partner_recommendations` | - |
+| `get_ecosystem_activity` | - |
+| `get_partner_context` | - |
+| `get_partner_suggestions` | - |
+| `search_crossbeam_knowledge` | - |
+| `get_deal_navigator_close_deals_link` | - |
+| `get_partner_sharing_status` | `temp_a2a_sharing_scopes` |
+| `switch_crossbeam_organization` | `org_switcher_access` |
+
+Flag-gated intents carry a `flag:` chip. They will not route unless the flag is
+on for the test org.
+
+Two card types expect **no** tool call:
+
+- `probe_prompt_injection` - should refuse.
+- `gap_population_sharing` - "what populations is X sharing with me" lost its
+  tool in consolidation (`get_partner_populations` and `get_own_populations` are
+  gone, and `get_partner_sharing_status` only covers your own side). The agent
+  should explain or defer, not fake it with an overlap query.
+
+When the tool surface changes, update `TOOL_BY_USE_CASE`, add or drop the
+matching intent, and re-publish.
 
 ## How it's structured (all inline in the HTML)
 
@@ -40,7 +78,7 @@ which records what each prompt *should* trigger and the results of running them.
 
 Paste your own partners / accounts / tags in the sidebar to fill placeholders
 with your data. Entries persist per-browser in `localStorage`
-(`mcp_test_grid_partners_v3`, `_accounts_v2`, `_tags`). Bump the version suffix
+(`mcp_test_grid_partners_v4`, `_accounts_v2`, `_tags`). Bump the version suffix
 in the source when you change the default seeds so returning visitors re-seed.
 
 ## Filters
