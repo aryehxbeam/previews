@@ -17,14 +17,20 @@ which records what each prompt *should* trigger and the results of running them.
 ## Where the content comes from
 
 - **Intents** were distilled from ~444 real user questions captured off the
-  Agent Analytics Dashboard, grouped into intent categories.
+  Agent Analytics Dashboard, grouped into intent categories. Only the distilled,
+  generalized phrasings live in this page - the raw captures do not.
 - Each intent is tagged with `useCases` = stable `crossbeam_mcp.tooling.ToolUseCase`
   identifiers (survive tool renames), so it stays valid as tools are renamed or
   consolidated.
-- The "real captures" expandable on each card shows the raw questions that
-  seeded that intent. That list is a frozen 30-day snapshot from before tool
-  consolidation, so its tool pills name tools that no longer exist. Read them as
-  history, not as expected routes.
+- `sourceCategory` and `realCategories` record which dashboard category an intent
+  came from. They are provenance labels only.
+
+An earlier version embedded a `REAL_QUESTIONS_JSON` blob of 318 raw captures and
+rendered them in a per-card "real captures" panel. The panel was dead code - the
+block was built but never inserted into the card - and the blob carried real
+company and individual names from production traffic, so it was removed. Don't
+re-add raw captures: this page is published to a Pages site, and everything in
+the file is readable in view-source whether or not it renders.
 
 ## Scope: post-consolidation tool surface
 
